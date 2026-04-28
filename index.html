@@ -552,24 +552,6 @@
 
 <!-- Firebase -->
 <script type="module">
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-  import {
-    getAuth,
-    signInWithEmailAndPassword,
-    signOut,
-    onAuthStateChanged,
-    setPersistence,
-    browserLocalPersistence
-  } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-  import {
-    getFirestore,
-    doc,
-    getDoc,
-    setDoc,
-    updateDoc,
-    onSnapshot
-  } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-
   // ── CONFIG: Klistra in ditt Firebase-config-objekt här ──
   const firebaseConfig = {
     apiKey: "REPLACE_WITH_YOUR_API_KEY",
@@ -580,12 +562,50 @@
     appId: "REPLACE_WITH_YOUR_APP_ID"
   };
 
-  const app  = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db   = getFirestore(app);
+  const IS_DEMO = firebaseConfig.apiKey.startsWith('REPLACE_');
 
-  // Keep session alive
-  setPersistence(auth, browserLocalPersistence);
+  // ── Demo mode (no Firebase) ──
+  let demoData = {
+    weeklyAmount: 30,
+    payDay: 1,
+    lastPayout: new Date().toISOString(),
+    kids: [{ name: 'Barn 1', balance: 150 }, { name: 'Barn 2', balance: 80 }]
+  };
+
+  let demoListeners = [];
+  function demoNotify() { demoListeners.forEach(fn => fn(demoData)); }
+
+  const mockDb = {
+    updateDoc: async (_, patch) => { Object.assign(demoData, patch); demoNotify(); },
+    onSnapshot: (_, cb) => { demoListeners.push(cb); cb(demoData); return () => { demoListeners = demoListeners.filter(f => f !== cb); }; },
+    getDoc: async () => ({ exists: () => true, data: () => demoData }),
+    setDoc: async (_, d) => { demoData = d; demoNotify(); }
+  };
+
+  const mockAuth = {
+    signIn: async () => {},
+    signOut: async () => { hide('app-screen'); show('login-screen', 'flex'); },
+    currentUser: { email: 'demo@exempel.se' }
+  };
+
+  // ── Real Firebase (only loaded when config is present) ──
+  let app, auth, db;
+  if (!IS_DEMO) {
+    const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+    const { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence }
+      = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+    const { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot }
+      = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+
+    app  = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db   = getFirestore(app);
+    setPersistence(auth, browserLocalPersistence);
+
+    // Expose real Firebase functions to the rest of the script
+    window._fb = { auth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
+                   db, doc, getDoc, setDoc, updateDoc, onSnapshot };
+  }
 
   const FAMILY_DOC = 'families/main';
 
@@ -632,8 +652,7 @@
     const lastDue = lastOccurrence(today, payDay);
 
     if (!lastPay) {
-      // First run – set lastPayout to today, no payout
-      await updateDoc(doc(db, FAMILY_DOC), { lastPayout: today.toISOString() });
+      await dbUpdate({ lastPayout: today.toISOString() });
       return;
     }
 
@@ -650,10 +669,7 @@
     const add      = weekly * missed;
     const newKids  = data.kids.map(k => ({ ...k, balance: (k.balance || 0) + add }));
 
-    await updateDoc(doc(db, FAMILY_DOC), {
-      kids:       newKids,
-      lastPayout: lastDue.toISOString()
-    });
+    await dbUpdate({ kids: newKids, lastPayout: lastDue.toISOString() });
 
     showToast(`+${add} kr utbetalat (${missed} vecka${missed > 1 ? 'r' : ''})`);
   }
@@ -732,6 +748,38 @@
     if (e.key === 'Enter') document.getElementById(`name-input-${i}`).blur();
   };
 
+  // ── DB helpers (real or demo) ──
+  async function dbUpdate(patch) {
+    if (IS_DEMO) {
+      await mockDb.updateDoc(null, patch);
+    } else {
+      const { db, doc, updateDoc } = window._fb;
+      await updateDoc(doc(db, FAMILY_DOC), patch);
+    }
+  }
+
+  function dbListen(cb) {
+    if (IS_DEMO) {
+      return mockDb.onSnapshot(null, cb);
+    } else {
+      const { db, doc, onSnapshot } = window._fb;
+      return onSnapshot(doc(db, FAMILY_DOC), snap => cb(snap.data()));
+    }
+  }
+
+  async function dbEnsureDoc() {
+    if (IS_DEMO) return;
+    const { db, doc, getDoc, setDoc } = window._fb;
+    const ref  = doc(db, FAMILY_DOC);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) {
+      await setDoc(ref, {
+        weeklyAmount: 30, payDay: 1, lastPayout: null,
+        kids: [{ name: 'Barn 1', balance: 0 }, { name: 'Barn 2', balance: 0 }]
+      });
+    }
+  }
+
   window.saveName = async function(i) {
     const inp  = document.getElementById(`name-input-${i}`);
     const name = inp.value.trim() || localData.kids[i].name;
@@ -740,8 +788,8 @@
 
     if (name === localData.kids[i].name) return;
 
-    const kids      = localData.kids.map((k, j) => j === i ? { ...k, name } : k);
-    await updateDoc(doc(db, FAMILY_DOC), { kids });
+    const kids = localData.kids.map((k, j) => j === i ? { ...k, name } : k);
+    await dbUpdate({ kids });
     showToast('Namn sparat');
   };
 
@@ -751,7 +799,7 @@
     const kids = localData.kids.map((k, j) =>
       j === i ? { ...k, balance: (k.balance || 0) + delta } : k
     );
-    await updateDoc(doc(db, FAMILY_DOC), { kids });
+    await dbUpdate({ kids });
     showToast((delta > 0 ? '+' : '') + delta + ' kr');
   };
 
@@ -776,7 +824,7 @@
     const weekly = parseFloat(document.getElementById('s-weekly').value);
     const payDay = parseInt(document.getElementById('s-payday').value, 10);
     if (isNaN(weekly) || weekly < 0) { showToast('Ogiltigt belopp'); return; }
-    await updateDoc(doc(db, FAMILY_DOC), { weeklyAmount: weekly, payDay });
+    await dbUpdate({ weeklyAmount: weekly, payDay });
     showToast('Inställningar sparade');
   };
 
@@ -791,7 +839,23 @@
     btn.disabled = true;
     btn.textContent = 'Loggar in…';
 
+    if (IS_DEMO) {
+      // Demo: accept any non-empty credentials
+      if (email && pw) {
+        hide('login-screen');
+        show('app-screen');
+        await initFamily();
+      } else {
+        err.textContent = 'Fyll i e-post och lösenord';
+        err.style.display = 'block';
+      }
+      btn.disabled = false;
+      btn.textContent = 'Logga in';
+      return;
+    }
+
     try {
+      const { auth, signInWithEmailAndPassword } = window._fb;
       await signInWithEmailAndPassword(auth, email, pw);
     } catch (e) {
       err.textContent = 'Fel e-post eller lösenord';
@@ -803,7 +867,12 @@
 
   window.doLogout = async function() {
     if (unsubSnapshot) { unsubSnapshot(); unsubSnapshot = null; }
-    await signOut(auth);
+    if (IS_DEMO) {
+      mockAuth.signOut();
+    } else {
+      const { auth, signOut } = window._fb;
+      await signOut(auth);
+    }
   };
 
   // Allow Enter key on login form
@@ -813,43 +882,34 @@
 
   // ── Bootstrap ──
   async function initFamily() {
-    const ref  = doc(db, FAMILY_DOC);
-    const snap = await getDoc(ref);
-
-    if (!snap.exists()) {
-      await setDoc(ref, {
-        weeklyAmount: 30,
-        payDay:       1,
-        lastPayout:   null,
-        kids: [
-          { name: 'Barn 1', balance: 0 },
-          { name: 'Barn 2', balance: 0 }
-        ]
-      });
-    }
-
-    // Subscribe to real-time updates
-    unsubSnapshot = onSnapshot(ref, async snap => {
-      const data = snap.data();
+    await dbEnsureDoc();
+    unsubSnapshot = dbListen(async data => {
       renderApp(data);
       await checkPayout(data);
     });
   }
 
   // ── Auth state ──
-  onAuthStateChanged(auth, async user => {
+  if (IS_DEMO) {
+    // Show demo banner and go straight to login screen
     hide('loading-overlay');
-
-    if (user) {
-      show('app-screen');
-      hide('login-screen');
-      await initFamily();
-    } else {
-      hide('app-screen');
-      show('login-screen', 'flex');
-      if (unsubSnapshot) { unsubSnapshot(); unsubSnapshot = null; }
-    }
-  });
+    show('login-screen', 'flex');
+    document.querySelector('.login-title p').textContent = '🔧 Demo-läge – ingen Firebase kopplad';
+  } else {
+    const { auth, onAuthStateChanged } = window._fb;
+    onAuthStateChanged(auth, async user => {
+      hide('loading-overlay');
+      if (user) {
+        show('app-screen');
+        hide('login-screen');
+        await initFamily();
+      } else {
+        hide('app-screen');
+        show('login-screen', 'flex');
+        if (unsubSnapshot) { unsubSnapshot(); unsubSnapshot = null; }
+      }
+    });
+  }
 </script>
 
 </body>
