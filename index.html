@@ -524,13 +524,7 @@
     <!-- Settings -->
     <p class="section-header" id="settings-heading" style="display:none">Inställningar</p>
     <div id="settings-panel">
-      <div class="settings-row">
-        <div>
-          <div class="settings-label">Veckobelopp</div>
-          <div class="settings-sub">Belopp per barn</div>
-        </div>
-        <input type="number" id="s-weekly" min="0" step="5" />
-      </div>
+      <div id="s-kids-amounts"><!-- rendered by JS --></div>
       <div class="settings-row">
         <div>
           <div class="settings-label">Utbetalningsdag</div>
@@ -670,12 +664,14 @@
     const missed    = Math.round((lastDue - lastPayDay) / msPerWeek);
     if (missed <= 0) return;
 
-    const add      = weekly * missed;
-    const newKids  = data.kids.map(k => ({ ...k, balance: (k.balance || 0) + add }));
+    const newKids = data.kids.map(k => {
+      const amount = (k.weeklyAmount ?? weekly) * missed;
+      return { ...k, balance: (k.balance || 0) + amount };
+    });
 
     await dbUpdate({ kids: newKids, lastPayout: lastDue.toISOString() });
 
-    showToast(`+${add} kr utbetalat (${missed} vecka${missed > 1 ? 'r' : ''})`);
+    showToast(`Veckopeng utbetalad (${missed} vecka${missed > 1 ? 'r' : ''})`);
   }
 
   // ── Render ──
@@ -690,7 +686,7 @@
     const diffDays  = Math.round((next - today) / (24*60*60*1000));
     const dayLabel  = diffDays === 0 ? 'idag' : diffDays === 1 ? 'imorgon' : `om ${diffDays} dagar`;
     document.getElementById('payout-info').textContent =
-      `Nästa utbetalning (${data.weeklyAmount ?? 30} kr) ${getDayName(payDay)} – ${dayLabel}`;
+      `Nästa utbetalning ${getDayName(payDay)} – ${dayLabel}`;
 
     // Kids
     const grid = document.getElementById('kids-grid');
@@ -731,8 +727,17 @@
     });
 
     // Settings
-    document.getElementById('s-weekly').value  = data.weeklyAmount ?? 30;
-    document.getElementById('s-payday').value  = data.payDay ?? 1;
+    document.getElementById('s-payday').value = data.payDay ?? 1;
+    document.getElementById('s-kids-amounts').innerHTML = (data.kids || []).map((kid, i) => `
+      <div class="settings-row">
+        <div>
+          <div class="settings-label">${escHtml(kid.name)}</div>
+          <div class="settings-sub">kr per vecka</div>
+        </div>
+        <input type="number" id="s-weekly-${i}" min="0" step="5"
+               value="${kid.weeklyAmount ?? data.weeklyAmount ?? 30}" />
+      </div>
+    `).join('');
   }
 
   function escHtml(s) {
@@ -779,7 +784,7 @@
     if (!snap.exists()) {
       await setDoc(ref, {
         weeklyAmount: 30, payDay: 1, lastPayout: null,
-        kids: [{ name: 'Barn 1', balance: 0 }, { name: 'Barn 2', balance: 0 }]
+        kids: [{ name: 'Barn 1', balance: 0, weeklyAmount: 30 }, { name: 'Barn 2', balance: 0, weeklyAmount: 30 }]
       });
     }
   }
@@ -825,10 +830,12 @@
   };
 
   window.saveSettings = async function() {
-    const weekly = parseFloat(document.getElementById('s-weekly').value);
     const payDay = parseInt(document.getElementById('s-payday').value, 10);
-    if (isNaN(weekly) || weekly < 0) { showToast('Ogiltigt belopp'); return; }
-    await dbUpdate({ weeklyAmount: weekly, payDay });
+    const kids   = localData.kids.map((k, i) => {
+      const val = parseFloat(document.getElementById(`s-weekly-${i}`)?.value);
+      return { ...k, weeklyAmount: isNaN(val) || val < 0 ? (k.weeklyAmount ?? 30) : val };
+    });
+    await dbUpdate({ kids, payDay });
     showToast('Inställningar sparade');
   };
 
