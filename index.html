@@ -679,11 +679,12 @@
     localData = data;
 
     // Payout info
-    const payDay    = data.payDay ?? 1;
-    const today     = new Date();
-    const next      = lastOccurrence(today, payDay);
-    next.setDate(next.getDate() + 7);
-    const diffDays  = Math.round((next - today) / (24*60*60*1000));
+    const payDay        = data.payDay ?? 1;
+    const todayMidnight = new Date(); todayMidnight.setHours(0, 0, 0, 0);
+    const lastDue       = lastOccurrence(todayMidnight, payDay);
+    const next          = new Date(lastDue);
+    if (next.getTime() < todayMidnight.getTime()) next.setDate(next.getDate() + 7);
+    const diffDays  = Math.round((next - todayMidnight) / (24*60*60*1000));
     const dayLabel  = diffDays === 0 ? 'idag' : diffDays === 1 ? 'imorgon' : `om ${diffDays} dagar`;
     document.getElementById('payout-info').textContent =
       `Nästa utbetalning ${getDayName(payDay)} – ${dayLabel}`;
