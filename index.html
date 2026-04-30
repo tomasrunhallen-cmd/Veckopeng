@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="sv">
+<html lang="sv" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
@@ -7,485 +7,322 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Veckopeng" />
-  <meta name="theme-color" content="#4f46e5" />
+  <meta id="theme-color-meta" name="theme-color" content="#0d0d14" />
   <title>Veckopeng</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icon-192.png" />
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
   <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <style>
+    :root[data-theme="dark"] {
+      --bg: #0d0d14; --surface: #16161f; --card: #1e1e2a;
+      --border: rgba(255,255,255,0.07); --text: #f0f0f8;
+      --muted: #6b7280; --sub: #9ca3af; --sheet-bg: #1a1a26;
+      --chip-bg: #2a2a38; --chip-text: #c4c4d4; --toggle-bg: #2a2a38;
+      --input-bg: #2a2a38; --error-bg: rgba(239,68,68,0.15); --error-text: #f87171;
+    }
+    :root[data-theme="light"] {
+      --bg: #f0f0f7; --surface: #ffffff; --card: #ffffff;
+      --border: rgba(0,0,0,0.07); --text: #0f0f18;
+      --muted: #6b7280; --sub: #374151; --sheet-bg: #ffffff;
+      --chip-bg: #f3f4f6; --chip-text: #374151; --toggle-bg: #e5e7eb;
+      --input-bg: #f3f4f6; --error-bg: #fef2f2; --error-text: #b91c1c;
+    }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    :root {
-      --primary: #4f46e5;
-      --primary-dark: #3730a3;
-      --primary-light: #e0e7ff;
-      --success: #10b981;
-      --danger: #ef4444;
-      --bg: #f8fafc;
-      --card: #ffffff;
-      --text: #1e293b;
-      --muted: #64748b;
-      --border: #e2e8f0;
-      --radius: 16px;
-      --shadow: 0 4px 24px rgba(0,0,0,0.08);
-    }
-
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100dvh;
-      -webkit-font-smoothing: antialiased;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100dvh; -webkit-font-smoothing: antialiased;
+      transition: background 0.3s, color 0.3s;
     }
 
-    /* ── Login ── */
+    /* LOADING */
+    #loading-overlay {
+      position: fixed; inset: 0; background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 16px; z-index: 100;
+    }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--border); border-top-color: #a78bfa;
+      border-radius: 50%; animation: spin 0.7s linear infinite;
+    }
+
+    /* LOGIN */
     #login-screen {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100dvh;
-      padding: 24px;
-      gap: 32px;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; min-height: 100dvh; padding: 24px; gap: 28px;
     }
-
-    .login-logo {
-      font-size: 56px;
-    }
-
-    .login-title {
-      text-align: center;
-    }
-
-    .login-title h1 {
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--text);
-    }
-
-    .login-title p {
-      color: var(--muted);
-      margin-top: 6px;
-      font-size: 15px;
-    }
-
+    .login-logo { font-size: 52px; }
+    .login-title { text-align: center; }
+    .login-title h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+    .login-title p { color: var(--muted); margin-top: 6px; font-size: 14px; }
     .login-card {
-      background: var(--card);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 28px 24px;
-      width: 100%;
-      max-width: 380px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 20px; padding: 28px 24px;
+      width: 100%; max-width: 380px;
+      display: flex; flex-direction: column; gap: 14px;
     }
-
-    .input-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
+    .input-group { display: flex; flex-direction: column; gap: 6px; }
     .input-group label {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+      font-size: 12px; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.07em;
     }
-
-    input[type="email"],
-    input[type="password"],
-    input[type="text"],
-    input[type="number"] {
-      padding: 12px 14px;
-      border: 2px solid var(--border);
-      border-radius: 10px;
-      font-size: 16px;
-      color: var(--text);
-      background: var(--bg);
-      width: 100%;
-      transition: border-color 0.15s;
-      -webkit-appearance: none;
+    .input-group input {
+      padding: 13px 16px; background: var(--input-bg);
+      border: 1.5px solid var(--border); border-radius: 12px;
+      font-size: 16px; color: var(--text); width: 100%;
+      font-family: inherit; transition: border-color 0.15s; -webkit-appearance: none;
     }
-
-    input:focus {
-      outline: none;
-      border-color: var(--primary);
-    }
-
-    .btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 14px 20px;
-      border: none;
-      border-radius: 12px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: opacity 0.15s, transform 0.1s;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .btn:active { transform: scale(0.97); }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    .btn-primary {
-      background: var(--primary);
-      color: #fff;
-      width: 100%;
-    }
-
-    .btn-primary:hover:not(:disabled) { background: var(--primary-dark); }
-
+    .input-group input:focus { outline: none; border-color: #a78bfa; }
     .error-msg {
-      background: #fef2f2;
-      color: #b91c1c;
-      padding: 10px 14px;
-      border-radius: 10px;
-      font-size: 14px;
-      display: none;
+      background: var(--error-bg); color: var(--error-text);
+      padding: 10px 14px; border-radius: 10px; font-size: 14px; display: none;
     }
+    .btn-login {
+      padding: 15px; background: #a78bfa; color: #fff;
+      border: none; border-radius: 12px; font-size: 16px; font-weight: 700;
+      cursor: pointer; width: 100%; font-family: inherit;
+      transition: opacity 0.15s, transform 0.1s; -webkit-tap-highlight-color: transparent;
+    }
+    .btn-login:active { transform: scale(0.97); }
+    .btn-login:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    /* ── App ── */
+    /* APP */
     #app-screen { display: none; }
 
+    /* HEADER */
     .app-header {
-      background: var(--primary);
-      color: #fff;
-      padding: 20px 20px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 20px 16px; background: var(--surface);
+      border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10;
     }
-
-    .app-header h1 {
-      font-size: 20px;
-      font-weight: 700;
-    }
-
-    .header-actions {
-      display: flex;
-      gap: 8px;
-    }
-
+    .header-left { display: flex; align-items: center; gap: 10px; }
+    .header-logo { font-size: 22px; }
+    .header-title { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
+    .header-right { display: flex; align-items: center; gap: 8px; }
     .icon-btn {
-      background: rgba(255,255,255,0.2);
-      border: none;
-      border-radius: 10px;
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 18px;
-      color: #fff;
-      -webkit-tap-highlight-color: transparent;
-      transition: background 0.15s;
+      width: 36px; height: 36px; background: var(--toggle-bg);
+      border: none; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; cursor: pointer; color: var(--text);
+      transition: background 0.15s, transform 0.1s; -webkit-tap-highlight-color: transparent;
+    }
+    .icon-btn:active { transform: scale(0.92); }
+
+    .main-content { padding: 0 16px 120px; max-width: 600px; margin: 0 auto; }
+
+    /* PAYOUT STRIP */
+    .payout-strip {
+      margin: 16px 0 0; background: rgba(139,92,246,0.12);
+      border: 1px solid rgba(139,92,246,0.25); border-radius: 12px;
+      padding: 10px 16px; text-align: center;
+      font-size: 13px; font-weight: 500; color: #a78bfa;
     }
 
-    .icon-btn:active { background: rgba(255,255,255,0.35); }
-
-    .main-content {
-      padding: 0 16px 100px;
-      max-width: 600px;
-      margin: 0 auto;
+    /* CARDS */
+    .cards-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 12px; padding-top: 14px;
     }
-
-    /* ── Kids grid ── */
-    .kids-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: -16px;
-    }
-
-    @media (max-width: 360px) {
-      .kids-grid { grid-template-columns: 1fr; }
-    }
+    @media (max-width: 360px) { .cards-grid { grid-template-columns: 1fr; } }
 
     .kid-card {
-      background: var(--card);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 20px 16px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .kid-avatar {
-      font-size: 40px;
-      line-height: 1;
-    }
-
-    .kid-name-display {
-      font-size: 17px;
-      font-weight: 700;
-      color: var(--text);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .kid-name-display .edit-icon {
-      font-size: 12px;
-      color: var(--muted);
-      opacity: 0;
-      transition: opacity 0.15s;
-    }
-
-    .kid-name-display:hover .edit-icon { opacity: 1; }
-
-    .kid-name-input {
-      font-size: 16px;
-      font-weight: 700;
-      text-align: center;
-      padding: 4px 8px;
-      border: 2px solid var(--primary);
-      border-radius: 8px;
-      width: 100%;
-      display: none;
-    }
-
-    .kid-balance {
-      font-size: 36px;
-      font-weight: 800;
-      color: var(--primary);
-      letter-spacing: -1px;
-    }
-
-    .kid-balance.negative { color: var(--danger); }
-
-    .balance-label {
-      font-size: 12px;
-      color: var(--muted);
-      font-weight: 500;
-    }
-
-    /* ── Quick buttons ── */
-    .quick-btns {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-top: 4px;
-    }
-
-    .q-btn {
-      border: none;
-      border-radius: 8px;
-      padding: 6px 10px;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
+      background: var(--card); border-radius: 20px;
+      border: 1px solid var(--border); padding: 22px 16px 18px;
+      display: flex; flex-direction: column; align-items: center;
+      gap: 4px; position: relative; overflow: hidden; cursor: pointer;
       -webkit-tap-highlight-color: transparent;
-      transition: opacity 0.15s, transform 0.1s;
     }
-
-    .q-btn:active { transform: scale(0.93); }
-
-    .q-btn.plus {
-      background: #d1fae5;
-      color: #065f46;
+    .kid-card::before {
+      content: ''; position: absolute; top: -40px; left: 50%;
+      transform: translateX(-50%); width: 120px; height: 120px;
+      border-radius: 50%; filter: blur(40px); opacity: 0.18; pointer-events: none;
     }
-
-    .q-btn.minus {
-      background: #fee2e2;
-      color: #991b1b;
+    .kid-card.violet::before { background: #a78bfa; }
+    .kid-card.orange::before { background: #fb923c; }
+    .kid-avatar { font-size: 38px; line-height: 1; margin-bottom: 2px; }
+    .kid-name { font-size: 15px; font-weight: 600; color: var(--sub); letter-spacing: 0.2px; }
+    .kid-balance {
+      font-size: clamp(40px, 9vw, 60px); font-weight: 800;
+      letter-spacing: -2px; font-variant-numeric: tabular-nums; line-height: 1; margin: 6px 0 2px;
     }
-
-    /* ── Custom amount ── */
-    .custom-row {
-      display: flex;
-      gap: 6px;
-      margin-top: 8px;
-      width: 100%;
+    .kid-card.violet .kid-balance { color: #c4b5fd; }
+    .kid-card.orange .kid-balance { color: #fdba74; }
+    .kid-balance.negative { color: #f87171 !important; }
+    .kid-unit { font-size: 14px; font-weight: 500; color: var(--muted); margin-top: -2px; }
+    .change-btn {
+      margin-top: 12px; width: 100%; padding: 11px 0;
+      border: none; border-radius: 12px; font-size: 14px; font-weight: 600;
+      cursor: pointer; font-family: inherit; letter-spacing: 0.1px;
+      transition: opacity 0.15s, transform 0.12s; -webkit-tap-highlight-color: transparent;
     }
+    .change-btn:active { transform: scale(0.95); opacity: 0.85; }
+    .kid-card.violet .change-btn { background: rgba(167,139,250,0.15); color: #a78bfa; }
+    .kid-card.orange .change-btn { background: rgba(251,146,60,0.15); color: #fb923c; }
 
-    .custom-row input {
-      flex: 1;
-      min-width: 0;
-      padding: 8px 10px;
-      border: 2px solid var(--border);
-      border-radius: 8px;
-      font-size: 15px;
-      background: var(--bg);
-      color: var(--text);
-      -webkit-appearance: none;
+    /* SETTINGS */
+    .settings-section { margin-top: 20px; }
+    .settings-section-label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--muted); margin-bottom: 8px; padding: 0 2px;
     }
-
-    .custom-row input:focus {
-      outline: none;
-      border-color: var(--primary);
+    .settings-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 20px; overflow: hidden;
     }
-
-    .custom-row .q-btn {
-      padding: 8px 10px;
-      font-size: 18px;
-    }
-
-    /* ── Section headers ── */
-    .section-header {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      margin: 24px 0 10px;
-    }
-
-    /* ── Settings panel ── */
-    #settings-panel {
-      display: none;
-      background: var(--card);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 20px;
-      margin-top: -16px;
-    }
-
     .settings-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 14px 0;
-      border-bottom: 1px solid var(--border);
-      gap: 12px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 18px; border-bottom: 1px solid var(--border); gap: 12px;
     }
-
     .settings-row:last-child { border-bottom: none; }
-
-    .settings-label {
-      font-size: 15px;
-      font-weight: 500;
-      color: var(--text);
+    .settings-label { font-size: 15px; font-weight: 500; }
+    .settings-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .settings-input {
+      background: var(--input-bg); border: 1.5px solid var(--border);
+      border-radius: 10px; padding: 9px 12px; font-size: 15px;
+      font-weight: 600; color: var(--text); font-family: inherit;
+      transition: border-color 0.15s; -webkit-appearance: none;
     }
-
-    .settings-sub {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 2px;
+    .settings-input:focus { outline: none; border-color: #a78bfa; }
+    .settings-input[type="text"]   { text-align: left;  width: 130px; }
+    .settings-input[type="number"] { text-align: right; width: 80px; }
+    .settings-select {
+      background: var(--input-bg); border: 1.5px solid var(--border);
+      border-radius: 10px; padding: 9px 12px; font-size: 15px;
+      font-weight: 600; color: var(--text); font-family: inherit;
+      -webkit-appearance: none; appearance: none; width: 140px;
+      transition: border-color 0.15s;
     }
-
-    .settings-row input[type="number"],
-    .settings-row select {
-      width: 110px;
-      padding: 8px 10px;
-      border: 2px solid var(--border);
-      border-radius: 8px;
-      font-size: 15px;
-      color: var(--text);
-      background: var(--bg);
-      -webkit-appearance: none;
-      text-align: right;
-    }
-
-    .settings-row select {
-      text-align: left;
-    }
-
-    .settings-row input:focus,
-    .settings-row select:focus {
-      outline: none;
-      border-color: var(--primary);
-    }
-
+    .settings-select:focus { outline: none; border-color: #a78bfa; }
     .save-btn {
-      background: var(--primary);
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      padding: 12px 20px;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      width: 100%;
-      margin-top: 16px;
-      transition: opacity 0.15s;
+      width: 100%; margin-top: 12px; padding: 15px; background: #a78bfa; color: #fff;
+      border: none; border-radius: 14px; font-size: 15px; font-weight: 700;
+      cursor: pointer; font-family: inherit;
+      transition: opacity 0.15s, transform 0.1s; -webkit-tap-highlight-color: transparent;
     }
+    .save-btn:active { transform: scale(0.97); }
 
-    .save-btn:active { opacity: 0.8; }
-
-    /* ── Toast ── */
-    #toast {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%) translateY(80px);
-      background: #1e293b;
-      color: #fff;
-      padding: 12px 20px;
-      border-radius: 12px;
-      font-size: 14px;
-      font-weight: 500;
-      white-space: nowrap;
-      transition: transform 0.3s ease;
-      z-index: 999;
-      pointer-events: none;
+    /* OVERLAY */
+    .overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px); opacity: 0; pointer-events: none;
+      transition: opacity 0.3s; z-index: 40;
     }
+    .overlay.show { opacity: 1; pointer-events: all; }
 
-    #toast.show { transform: translateX(-50%) translateY(0); }
-
-    /* ── Loading ── */
-    #loading-overlay {
-      position: fixed;
-      inset: 0;
-      background: var(--bg);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      gap: 16px;
-      z-index: 100;
+    /* BOTTOM SHEET */
+    .bottom-sheet {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--sheet-bg); border-radius: 24px 24px 0 0;
+      padding: 0 20px 36px; transform: translateY(110%);
+      transition: transform 0.4s cubic-bezier(0.32,0.72,0,1);
+      z-index: 50; max-width: 500px; margin: 0 auto;
     }
-
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid var(--border);
-      border-top-color: var(--primary);
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
+    .bottom-sheet.open { transform: translateY(0); }
+    .sheet-handle {
+      width: 36px; height: 4px; background: var(--border);
+      border-radius: 2px; margin: 14px auto 20px;
     }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ── Next payout info ── */
-    .payout-info {
-      background: var(--primary-light);
-      border-radius: 12px;
-      padding: 12px 16px;
-      margin-top: -8px;
-      margin-bottom: 8px;
-      font-size: 13px;
-      color: var(--primary-dark);
-      font-weight: 500;
-      text-align: center;
+    .sheet-title {
+      font-size: 17px; font-weight: 700; text-align: center;
+      margin-bottom: 18px; color: var(--text);
     }
+    .sheet-title span { color: #a78bfa; }
+    .sheet-title.orange span { color: #fb923c; }
+    .chips { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; }
+    .chip {
+      flex: 1; padding: 9px 4px; background: var(--chip-bg);
+      border: 1px solid var(--border); border-radius: 10px;
+      font-size: 14px; font-weight: 600; color: var(--chip-text);
+      cursor: pointer; text-align: center; font-family: inherit;
+      transition: background 0.15s, transform 0.1s; -webkit-tap-highlight-color: transparent;
+    }
+    .chip:active { transform: scale(0.93); }
+    .chip.selected { background: rgba(167,139,250,0.2); border-color: #a78bfa; color: #a78bfa; }
+    .amount-input-wrap { position: relative; margin-bottom: 20px; }
+    .amount-input {
+      width: 100%; background: var(--chip-bg); border: 2px solid var(--border);
+      border-radius: 14px; padding: 18px 56px 18px 20px;
+      font-size: 32px; font-weight: 800; color: var(--text); text-align: center;
+      font-variant-numeric: tabular-nums; font-family: inherit;
+      transition: border-color 0.15s; -webkit-appearance: none;
+    }
+    .amount-input:focus { outline: none; border-color: #a78bfa; }
+    .amount-unit {
+      position: absolute; right: 18px; top: 50%; transform: translateY(-50%);
+      font-size: 15px; font-weight: 600; color: var(--muted);
+    }
+    .sheet-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .sheet-btn {
+      padding: 16px; border: none; border-radius: 14px;
+      font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit;
+      transition: opacity 0.15s, transform 0.12s; -webkit-tap-highlight-color: transparent;
+    }
+    .sheet-btn:active { transform: scale(0.96); }
+    .sheet-btn.add { background: #10b981; color: #fff; }
+    .sheet-btn.sub { background: #ef4444; color: #fff; }
+
+    /* TOAST */
+    .toast {
+      position: fixed; bottom: 24px; left: 16px; right: 16px; max-width: 420px;
+      margin: 0 auto; background: #1e1e2a; border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px; padding: 14px 16px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      transform: translateY(100px); opacity: 0;
+      transition: transform 0.35s cubic-bezier(0.32,0.72,0,1), opacity 0.3s;
+      z-index: 60; overflow: hidden; pointer-events: none;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; pointer-events: all; }
+    .toast-text { font-size: 14px; font-weight: 500; color: #f0f0f8; }
+    .toast-undo {
+      background: rgba(167,139,250,0.2); border: 1px solid #a78bfa;
+      border-radius: 8px; padding: 6px 12px; font-size: 13px;
+      font-weight: 700; color: #a78bfa; cursor: pointer;
+      white-space: nowrap; flex-shrink: 0; font-family: inherit;
+    }
+    .toast.no-undo .toast-undo { visibility: hidden; }
+    .toast-progress {
+      position: absolute; bottom: 0; left: 0; height: 2px; background: #a78bfa;
+      border-radius: 0 0 16px 16px; width: 100%;
+      transform-origin: left; transform: scaleX(1);
+    }
+    .toast.show .toast-progress { animation: shrink 6s linear forwards; }
+
+    /* ANIMATIONS */
+    @keyframes spin    { to { transform: rotate(360deg); } }
+    @keyframes shrink  { to { transform: scaleX(0); } }
+    @keyframes pop {
+      0%   { transform: scale(1); }
+      40%  { transform: scale(1.12); }
+      100% { transform: scale(1); }
+    }
+    .balance-pop { animation: pop 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+
+    /* hide spin arrows */
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
   </style>
 </head>
 <body>
 
-<!-- Loading -->
+<!-- LOADING -->
 <div id="loading-overlay">
   <div style="font-size:48px">🐷</div>
   <div class="spinner"></div>
 </div>
 
-<!-- Login -->
+<!-- LOGIN -->
 <div id="login-screen" style="display:none">
   <div class="login-logo">🐷</div>
   <div class="login-title">
     <h1>Veckopeng</h1>
-    <p>Logga in för att fortsätta</p>
+    <p id="login-subtitle">Logga in för att fortsätta</p>
   </div>
   <div class="login-card">
     <div class="input-group">
@@ -497,60 +334,82 @@
       <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" />
     </div>
     <div class="error-msg" id="login-error"></div>
-    <button class="btn btn-primary" id="login-btn" onclick="doLogin()">Logga in</button>
+    <button class="btn-login" id="login-btn" onclick="doLogin()">Logga in</button>
   </div>
 </div>
 
-<!-- App -->
+<!-- APP -->
 <div id="app-screen">
   <div class="app-header">
-    <h1>🐷 Veckopeng</h1>
-    <div class="header-actions">
-      <button class="icon-btn" onclick="toggleSettings()" title="Inställningar">⚙️</button>
-      <button class="icon-btn" onclick="doLogout()" title="Logga ut">🚪</button>
+    <div class="header-left">
+      <span class="header-logo">🐷</span>
+      <span class="header-title">Veckopeng</span>
+    </div>
+    <div class="header-right">
+      <button class="icon-btn" id="theme-btn" onclick="toggleTheme()">☀️</button>
+      <button class="icon-btn" onclick="toggleSettings()">⚙️</button>
+      <button class="icon-btn" onclick="doLogout()">🚪</button>
     </div>
   </div>
 
   <div class="main-content">
+    <div class="payout-strip" id="payout-info">Laddar…</div>
+    <div class="cards-grid" id="kids-grid"></div>
 
-    <!-- Payout info -->
-    <p class="payout-info" id="payout-info">Laddar...</p>
-
-    <!-- Kids -->
-    <div class="kids-grid" id="kids-grid">
-      <!-- Rendered by JS -->
-    </div>
-
-    <!-- Settings -->
-    <p class="section-header" id="settings-heading" style="display:none">Inställningar</p>
-    <div id="settings-panel">
-      <div id="s-kids-amounts"><!-- rendered by JS --></div>
-      <div class="settings-row">
-        <div>
-          <div class="settings-label">Utbetalningsdag</div>
-          <div class="settings-sub">Veckodag</div>
+    <div class="settings-section" id="settings-section" style="display:none">
+      <div class="settings-section-label">Inställningar</div>
+      <div class="settings-card">
+        <div id="s-kids-list"></div>
+        <div class="settings-row">
+          <div><div class="settings-label">Utbetalningsdag</div></div>
+          <select id="s-payday" class="settings-select">
+            <option value="1">Måndag</option>
+            <option value="2">Tisdag</option>
+            <option value="3">Onsdag</option>
+            <option value="4">Torsdag</option>
+            <option value="5">Fredag</option>
+            <option value="6">Lördag</option>
+            <option value="0">Söndag</option>
+          </select>
         </div>
-        <select id="s-payday">
-          <option value="1">Måndag</option>
-          <option value="2">Tisdag</option>
-          <option value="3">Onsdag</option>
-          <option value="4">Torsdag</option>
-          <option value="5">Fredag</option>
-          <option value="6">Lördag</option>
-          <option value="0">Söndag</option>
-        </select>
       </div>
-      <button class="save-btn" onclick="saveSettings()">💾 Spara inställningar</button>
+      <button class="save-btn" onclick="saveSettings()">Spara inställningar</button>
     </div>
-
   </div>
 </div>
 
-<div id="toast"></div>
+<!-- OVERLAY -->
+<div class="overlay" id="overlay" onclick="closeSheet()"></div>
 
-<!-- Firebase -->
+<!-- BOTTOM SHEET -->
+<div class="bottom-sheet" id="sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title" id="sheet-title">Ändra saldo – <span>–</span></div>
+  <div class="chips">
+    <div class="chip" onclick="setChip(5,this)">5</div>
+    <div class="chip" onclick="setChip(10,this)">10</div>
+    <div class="chip" onclick="setChip(20,this)">20</div>
+    <div class="chip" onclick="setChip(50,this)">50</div>
+  </div>
+  <div class="amount-input-wrap">
+    <input class="amount-input" id="amount-input" type="number" value="" placeholder="0" min="0" inputmode="decimal" />
+    <span class="amount-unit">kr</span>
+  </div>
+  <div class="sheet-actions">
+    <button class="sheet-btn add" onclick="doAdjust(1)">＋ Lägg till</button>
+    <button class="sheet-btn sub" onclick="doAdjust(-1)">− Ta bort</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span class="toast-text" id="toast-text"></span>
+  <button class="toast-undo" onclick="doUndo()">Ångra</button>
+  <div class="toast-progress"></div>
+</div>
+
 <script type="module">
-  // ── CONFIG: Klistra in ditt Firebase-config-objekt här ──
+  // ── CONFIG ──
   const firebaseConfig = {
     apiKey: "AIzaSyCg4QS28Vl2MtBIlBsJNkXxLwbhqiXwa_4",
     authDomain: "veckopeng-66b0f.firebaseapp.com",
@@ -562,364 +421,347 @@
 
   const IS_DEMO = firebaseConfig.apiKey.startsWith('REPLACE_');
 
-  // ── Demo mode (no Firebase) ──
+  // ── DEMO MODE ──
   let demoData = {
-    weeklyAmount: 30,
-    payDay: 1,
+    weeklyAmount: 30, payDay: 1,
     lastPayout: new Date().toISOString(),
-    kids: [{ name: 'Barn 1', balance: 150 }, { name: 'Barn 2', balance: 80 }]
+    kids: [
+      { name: 'Rut',  balance: 285, weeklyAmount: 30 },
+      { name: 'Tage', balance: 140, weeklyAmount: 25 }
+    ]
   };
-
   let demoListeners = [];
   function demoNotify() { demoListeners.forEach(fn => fn(demoData)); }
-
   const mockDb = {
     updateDoc: async (_, patch) => { Object.assign(demoData, patch); demoNotify(); },
     onSnapshot: (_, cb) => { demoListeners.push(cb); cb(demoData); return () => { demoListeners = demoListeners.filter(f => f !== cb); }; },
-    getDoc: async () => ({ exists: () => true, data: () => demoData }),
-    setDoc: async (_, d) => { demoData = d; demoNotify(); }
+    getDoc:     async () => ({ exists: () => true, data: () => demoData }),
+    setDoc:     async (_, d) => { demoData = d; demoNotify(); }
   };
-
   const mockAuth = {
-    signIn: async () => {},
-    signOut: async () => { hide('app-screen'); show('login-screen', 'flex'); },
-    currentUser: { email: 'demo@exempel.se' }
+    signOut: async () => { hide('app-screen'); show('login-screen', 'flex'); }
   };
 
-  // ── Real Firebase (only loaded when config is present) ──
+  // ── REAL FIREBASE ──
   let app, auth, db;
   if (!IS_DEMO) {
     const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
     const { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence }
       = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
-    const { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot }
+    const { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, addDoc, collection }
       = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
-
     app  = initializeApp(firebaseConfig);
     auth = getAuth(app);
     db   = getFirestore(app);
     setPersistence(auth, browserLocalPersistence);
-
-    // Expose real Firebase functions to the rest of the script
     window._fb = { auth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
-                   db, doc, getDoc, setDoc, updateDoc, onSnapshot };
+                   db, doc, getDoc, setDoc, updateDoc, onSnapshot, addDoc, collection };
   }
 
   const FAMILY_DOC = 'families/main';
+  const AVATARS    = ['🐱', '🦊'];
+  const COLORS     = ['violet', 'orange'];
 
   let unsubSnapshot = null;
   let localData     = null;
+  let activeKid     = 0;
+  let lastTxKidIdx  = -1;
+  let lastTxDelta   = 0;
+  let lastTxRef     = null;
+  let txUndone      = false;
+  let toastTimer    = null;
+  let pendingPop    = -1;
 
-  // ── Helpers ──
-  function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2500);
+  // ── THEME ──
+  function initTheme() {
+    const saved = localStorage.getItem('vp-theme') || 'dark';
+    applyTheme(saved);
   }
+  function applyTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    document.getElementById('theme-btn').textContent = t === 'dark' ? '☀️' : '🌙';
+    document.getElementById('theme-color-meta').content = t === 'dark' ? '#0d0d14' : '#f0f0f7';
+  }
+  window.toggleTheme = function() {
+    const cur  = document.documentElement.getAttribute('data-theme') || 'dark';
+    const next = cur === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    localStorage.setItem('vp-theme', next);
+  };
 
-  function hide(id)   { document.getElementById(id).style.display = 'none'; }
+  // ── HELPERS ──
+  function hide(id)            { document.getElementById(id).style.display = 'none'; }
   function show(id, d='block') { document.getElementById(id).style.display = d; }
+  function escHtml(s)          { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function getDayName(d)       { return ['Söndag','Måndag','Tisdag','Onsdag','Torsdag','Fredag','Lördag'][d]; }
 
-  function fmtAmount(n) {
-    return (n >= 0 ? '' : '−') + Math.abs(Math.round(n)) + ' kr';
-  }
-
-  function getDayName(d) {
-    return ['Söndag','Måndag','Tisdag','Onsdag','Torsdag','Fredag','Lördag'][d];
-  }
-
-  // Returns the most recent occurrence of weekday `wd` (0=Sun…6=Sat) on or before `date`
   function lastOccurrence(date, wd) {
-    const d = new Date(date);
-    d.setHours(0, 0, 0, 0);
+    const d = new Date(date); d.setHours(0,0,0,0);
     const diff = (d.getDay() - wd + 7) % 7;
     d.setDate(d.getDate() - diff);
     return d;
   }
 
-  // ── Payout logic ──
-  async function checkPayout(data) {
-    const today   = new Date();
-    today.setHours(0, 0, 0, 0);
+  // ── TOAST ──
+  function showToast(msg) {
+    if (toastTimer) clearTimeout(toastTimer);
+    document.getElementById('toast-text').textContent = msg;
+    const t = document.getElementById('toast');
+    t.classList.remove('no-undo');
+    t.classList.remove('show');
+    void t.offsetWidth;
+    t.classList.add('show');
+    toastTimer = setTimeout(hideToast, 6000);
+  }
+  function showSimpleToast(msg) {
+    txUndone = true;
+    if (toastTimer) clearTimeout(toastTimer);
+    document.getElementById('toast-text').textContent = msg;
+    const t = document.getElementById('toast');
+    t.classList.add('no-undo');
+    t.classList.remove('show');
+    void t.offsetWidth;
+    t.classList.add('show');
+    toastTimer = setTimeout(hideToast, 6000);
+  }
+  function hideToast() {
+    document.getElementById('toast').classList.remove('show');
+    if (toastTimer) { clearTimeout(toastTimer); toastTimer = null; }
+  }
 
-    const payDay  = data.payDay ?? 1;
-    const weekly  = data.weeklyAmount ?? 30;
-    const lastPay = data.lastPayout ? new Date(data.lastPayout) : null;
+  // ── SHEET ──
+  window.openSheet = function(kidIdx) {
+    activeKid = kidIdx;
+    const title = document.getElementById('sheet-title');
+    title.className = 'sheet-title' + (kidIdx === 1 ? ' orange' : '');
+    const name = localData?.kids?.[kidIdx]?.name || ('Barn ' + (kidIdx + 1));
+    title.innerHTML = 'Ändra saldo – <span>' + escHtml(name) + '</span>';
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+    const inp = document.getElementById('amount-input');
+    inp.value = '';
+    document.getElementById('overlay').classList.add('show');
+    document.getElementById('sheet').classList.add('open');
+    setTimeout(() => inp.focus(), 350);
+  };
+  window.closeSheet = function() {
+    document.getElementById('overlay').classList.remove('show');
+    document.getElementById('sheet').classList.remove('open');
+  };
+  window.setChip = function(val, el) {
+    document.getElementById('amount-input').value = val;
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  };
 
-    const lastDue = lastOccurrence(today, payDay);
-
-    if (!lastPay) {
-      await dbUpdate({ lastPayout: today.toISOString() });
-      return;
+  // ── ADJUST ──
+  window.doAdjust = async function(sign) {
+    const inp = document.getElementById('amount-input');
+    const val = parseFloat(inp.value) || 0;
+    if (val <= 0) { inp.focus(); return; }
+    const delta = sign * val;
+    closeSheet();
+    const kids = localData.kids.map((k, j) =>
+      j === activeKid ? { ...k, balance: (k.balance || 0) + delta } : k
+    );
+    lastTxKidIdx = activeKid; lastTxDelta = delta; txUndone = false; pendingPop = activeKid;
+    await dbUpdate({ kids });
+    if (!IS_DEMO) {
+      try {
+        const { db, collection, addDoc } = window._fb;
+        lastTxRef = await addDoc(collection(db, FAMILY_DOC + '/transactions'), {
+          kidIndex: activeKid, delta, timestamp: new Date().toISOString(), undone: false
+        });
+      } catch(e) { lastTxRef = null; }
     }
-
-    const lastPayDay = new Date(lastPay);
-    lastPayDay.setHours(0, 0, 0, 0);
-
-    if (lastDue <= lastPayDay) return; // already paid
-
-    // Count missed weeks
-    const msPerWeek = 7 * 24 * 60 * 60 * 1000;
-    const missed    = Math.round((lastDue - lastPayDay) / msPerWeek);
-    if (missed <= 0) return;
-
-    const newKids = data.kids.map(k => {
-      const amount = (k.weeklyAmount ?? weekly) * missed;
-      return { ...k, balance: (k.balance || 0) + amount };
-    });
-
-    await dbUpdate({ kids: newKids, lastPayout: lastDue.toISOString() });
-
-    showToast(`Veckopeng utbetalad (${missed} vecka${missed > 1 ? 'r' : ''})`);
-  }
-
-  // ── Render ──
-  function renderApp(data) {
-    localData = data;
-
-    // Payout info
-    const payDay        = data.payDay ?? 1;
-    const todayMidnight = new Date(); todayMidnight.setHours(0, 0, 0, 0);
-    const lastDue       = lastOccurrence(todayMidnight, payDay);
-    const next          = new Date(lastDue);
-    if (next.getTime() < todayMidnight.getTime()) next.setDate(next.getDate() + 7);
-    const diffDays  = Math.round((next - todayMidnight) / (24*60*60*1000));
-    const dayLabel  = diffDays === 0 ? 'idag' : diffDays === 1 ? 'imorgon' : `om ${diffDays} dagar`;
-    document.getElementById('payout-info').textContent =
-      `Nästa utbetalning ${getDayName(payDay)} – ${dayLabel}`;
-
-    // Kids
-    const grid = document.getElementById('kids-grid');
-    grid.innerHTML = '';
-    const avatars = ['🐱', '🦊'];
-
-    (data.kids || []).forEach((kid, i) => {
-      const bal    = Math.round(kid.balance || 0);
-      const balCls = bal < 0 ? 'negative' : '';
-
-      const card = document.createElement('div');
-      card.className = 'kid-card';
-      card.innerHTML = `
-        <div class="kid-avatar">${avatars[i] || '🧒'}</div>
-        <div class="kid-name-display" id="name-display-${i}" onclick="editName(${i})">
-          <span id="name-text-${i}">${escHtml(kid.name)}</span>
-          <span class="edit-icon">✏️</span>
-        </div>
-        <input class="kid-name-input" id="name-input-${i}" value="${escHtml(kid.name)}"
-               onblur="saveName(${i})" onkeydown="nameKey(event,${i})" />
-        <div class="kid-balance ${balCls}" id="balance-${i}">${fmtAmount(bal)}</div>
-        <div class="balance-label">saldo</div>
-        <div class="quick-btns">
-          ${[5,10,20,50].map(v => `
-            <button class="q-btn plus" onclick="adjust(${i},${v})">+${v}</button>
-          `).join('')}
-          ${[5,10,20,50].map(v => `
-            <button class="q-btn minus" onclick="adjust(${i},-${v})">−${v}</button>
-          `).join('')}
-        </div>
-        <div class="custom-row">
-          <input type="number" id="custom-${i}" placeholder="Belopp" min="0" step="1" />
-          <button class="q-btn plus" onclick="adjustCustom(${i},1)">+</button>
-          <button class="q-btn minus" onclick="adjustCustom(${i},-1)">−</button>
-        </div>
-      `;
-      grid.appendChild(card);
-    });
-
-    // Settings
-    document.getElementById('s-payday').value = data.payDay ?? 1;
-    document.getElementById('s-kids-amounts').innerHTML = (data.kids || []).map((kid, i) => `
-      <div class="settings-row">
-        <div>
-          <div class="settings-label">${escHtml(kid.name)}</div>
-          <div class="settings-sub">kr per vecka</div>
-        </div>
-        <input type="number" id="s-weekly-${i}" min="0" step="5"
-               value="${kid.weeklyAmount ?? data.weeklyAmount ?? 30}" />
-      </div>
-    `).join('');
-  }
-
-  function escHtml(s) {
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
-  // ── Name editing ──
-  window.editName = function(i) {
-    document.getElementById(`name-display-${i}`).style.display = 'none';
-    const inp = document.getElementById(`name-input-${i}`);
-    inp.style.display = 'block';
-    inp.focus();
-    inp.select();
+    const sign2 = delta > 0 ? '+' : '−';
+    showToast(sign2 + Math.abs(Math.round(delta)) + ' kr till ' + escHtml(localData.kids[activeKid].name));
   };
 
-  window.nameKey = function(e, i) {
-    if (e.key === 'Enter') document.getElementById(`name-input-${i}`).blur();
+  // ── UNDO ──
+  window.doUndo = async function() {
+    if (txUndone || lastTxKidIdx < 0 || lastTxDelta === 0) return;
+    txUndone = true;
+    const kids = localData.kids.map((k, j) =>
+      j === lastTxKidIdx ? { ...k, balance: (k.balance || 0) - lastTxDelta } : k
+    );
+    pendingPop = lastTxKidIdx;
+    await dbUpdate({ kids });
+    if (!IS_DEMO && lastTxRef) {
+      try { const { updateDoc } = window._fb; await updateDoc(lastTxRef, { undone: true }); } catch(e) {}
+    }
+    hideToast();
   };
 
-  // ── DB helpers (real or demo) ──
+  // ── SETTINGS ──
+  window.toggleSettings = function() {
+    const s = document.getElementById('settings-section');
+    const opening = s.style.display !== 'block';
+    s.style.display = opening ? 'block' : 'none';
+    if (opening) setTimeout(() => s.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+  };
+  window.saveSettings = async function() {
+    const payDay = parseInt(document.getElementById('s-payday').value, 10);
+    const kids = localData.kids.map((k, i) => {
+      const name   = document.getElementById('s-name-' + i)?.value.trim() || k.name;
+      const weekly = parseFloat(document.getElementById('s-weekly-' + i)?.value);
+      return { ...k, name, weeklyAmount: isNaN(weekly) || weekly < 0 ? (k.weeklyAmount ?? 30) : weekly };
+    });
+    await dbUpdate({ kids, payDay });
+    showSimpleToast('Inställningar sparade');
+    document.getElementById('settings-section').style.display = 'none';
+  };
+
+  // ── DB HELPERS ──
   async function dbUpdate(patch) {
-    if (IS_DEMO) {
-      await mockDb.updateDoc(null, patch);
-    } else {
-      const { db, doc, updateDoc } = window._fb;
-      await updateDoc(doc(db, FAMILY_DOC), patch);
-    }
+    if (IS_DEMO) { await mockDb.updateDoc(null, patch); }
+    else { const { db, doc, updateDoc } = window._fb; await updateDoc(doc(db, FAMILY_DOC), patch); }
   }
-
   function dbListen(cb) {
-    if (IS_DEMO) {
-      return mockDb.onSnapshot(null, cb);
-    } else {
-      const { db, doc, onSnapshot } = window._fb;
-      return onSnapshot(doc(db, FAMILY_DOC), snap => cb(snap.data()));
-    }
+    if (IS_DEMO) { return mockDb.onSnapshot(null, cb); }
+    else { const { db, doc, onSnapshot } = window._fb; return onSnapshot(doc(db, FAMILY_DOC), snap => cb(snap.data())); }
   }
-
   async function dbEnsureDoc() {
     if (IS_DEMO) return;
     const { db, doc, getDoc, setDoc } = window._fb;
-    const ref  = doc(db, FAMILY_DOC);
+    const ref = doc(db, FAMILY_DOC);
     const snap = await getDoc(ref);
     if (!snap.exists()) {
       await setDoc(ref, {
         weeklyAmount: 30, payDay: 1, lastPayout: null,
-        kids: [{ name: 'Barn 1', balance: 0, weeklyAmount: 30 }, { name: 'Barn 2', balance: 0, weeklyAmount: 30 }]
+        kids: [{ name: 'Rut', balance: 0, weeklyAmount: 30 }, { name: 'Tage', balance: 0, weeklyAmount: 25 }]
       });
     }
   }
 
-  window.saveName = async function(i) {
-    const inp  = document.getElementById(`name-input-${i}`);
-    const name = inp.value.trim() || localData.kids[i].name;
-    inp.style.display = 'none';
-    document.getElementById(`name-display-${i}`).style.display = 'flex';
+  // ── PAYOUT ──
+  async function checkPayout(data) {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const payDay = data.payDay ?? 1;
+    const weekly = data.weeklyAmount ?? 30;
+    const lastPay = data.lastPayout ? new Date(data.lastPayout) : null;
+    const lastDue = lastOccurrence(today, payDay);
+    if (!lastPay) { await dbUpdate({ lastPayout: today.toISOString() }); return; }
+    const lastPayDay = new Date(lastPay); lastPayDay.setHours(0,0,0,0);
+    if (lastDue <= lastPayDay) return;
+    const missed = Math.round((lastDue - lastPayDay) / (7*24*60*60*1000));
+    if (missed <= 0) return;
+    const newKids = data.kids.map(k => ({ ...k, balance: (k.balance||0) + (k.weeklyAmount ?? weekly) * missed }));
+    await dbUpdate({ kids: newKids, lastPayout: lastDue.toISOString() });
+    showSimpleToast('Veckopeng utbetalad (' + missed + ' vecka' + (missed > 1 ? 'r' : '') + ')');
+  }
 
-    if (name === localData.kids[i].name) return;
+  // ── RENDER ──
+  function renderApp(data) {
+    localData = data;
 
-    const kids = localData.kids.map((k, j) => j === i ? { ...k, name } : k);
-    await dbUpdate({ kids });
-    showToast('Namn sparat');
-  };
+    // Payout strip
+    const payDay = data.payDay ?? 1;
+    const todayMid = new Date(); todayMid.setHours(0,0,0,0);
+    const lastDue  = lastOccurrence(todayMid, payDay);
+    const next     = new Date(lastDue);
+    if (next.getTime() < todayMid.getTime()) next.setDate(next.getDate() + 7);
+    const diff     = Math.round((next - todayMid) / (24*60*60*1000));
+    const label    = diff === 0 ? 'idag' : diff === 1 ? 'imorgon' : 'om ' + diff + ' dagar';
+    document.getElementById('payout-info').textContent = 'Nästa utbetalning ' + getDayName(payDay) + ' – ' + label;
 
-  // ── Balance adjustments ──
-  window.adjust = async function(i, delta) {
-    if (!localData) return;
-    const kids = localData.kids.map((k, j) =>
-      j === i ? { ...k, balance: (k.balance || 0) + delta } : k
-    );
-    await dbUpdate({ kids });
-    showToast((delta > 0 ? '+' : '') + delta + ' kr');
-  };
-
-  window.adjustCustom = async function(i, sign) {
-    const inp = document.getElementById(`custom-${i}`);
-    const val = parseFloat(inp.value);
-    if (!val || val <= 0) { inp.focus(); return; }
-    await window.adjust(i, sign * val);
-    inp.value = '';
-  };
-
-  // ── Settings ──
-  window.toggleSettings = function() {
-    const panel   = document.getElementById('settings-panel');
-    const heading = document.getElementById('settings-heading');
-    const open    = panel.style.display !== 'block';
-    panel.style.display   = open ? 'block' : 'none';
-    heading.style.display = open ? 'block' : 'none';
-  };
-
-  window.saveSettings = async function() {
-    const payDay = parseInt(document.getElementById('s-payday').value, 10);
-    const kids   = localData.kids.map((k, i) => {
-      const val = parseFloat(document.getElementById(`s-weekly-${i}`)?.value);
-      return { ...k, weeklyAmount: isNaN(val) || val < 0 ? (k.weeklyAmount ?? 30) : val };
+    // Cards
+    const grid = document.getElementById('kids-grid');
+    grid.innerHTML = '';
+    (data.kids || []).forEach((kid, i) => {
+      const bal  = Math.round(kid.balance || 0);
+      const card = document.createElement('div');
+      card.className = 'kid-card ' + (COLORS[i] || 'violet');
+      card.onclick = () => window.openSheet(i);
+      const negClass = bal < 0 ? ' negative' : '';
+      const display  = bal < 0 ? ('−' + Math.abs(bal)) : String(bal);
+      card.innerHTML =
+        '<div class="kid-avatar">' + (AVATARS[i] || '🧒') + '</div>' +
+        '<div class="kid-name">' + escHtml(kid.name) + '</div>' +
+        '<div class="kid-balance' + negClass + '" id="balance-' + i + '">' + display + '</div>' +
+        '<div class="kid-unit">kr</div>' +
+        '<button class="change-btn" onclick="openSheet(' + i + ');event.stopPropagation()">Ändra saldo</button>';
+      grid.appendChild(card);
     });
-    await dbUpdate({ kids, payDay });
-    showToast('Inställningar sparade');
-  };
 
-  // ── Auth ──
+    // Balance pop
+    if (pendingPop >= 0) {
+      const idx = pendingPop; pendingPop = -1;
+      requestAnimationFrame(() => {
+        const el = document.getElementById('balance-' + idx);
+        if (!el) return;
+        el.classList.remove('balance-pop');
+        void el.offsetWidth;
+        el.classList.add('balance-pop');
+      });
+    }
+
+    // Settings inputs
+    document.getElementById('s-payday').value = data.payDay ?? 1;
+    document.getElementById('s-kids-list').innerHTML = (data.kids || []).map((kid, i) =>
+      '<div class="settings-row">' +
+        '<div><div class="settings-label">' + (AVATARS[i]||'') + ' ' + escHtml(kid.name) + '</div>' +
+        '<div class="settings-sub">Namn</div></div>' +
+        '<input type="text" id="s-name-' + i + '" class="settings-input" value="' + escHtml(kid.name) + '" maxlength="20" />' +
+      '</div>' +
+      '<div class="settings-row">' +
+        '<div><div class="settings-label">Veckopeng</div>' +
+        '<div class="settings-sub">kr per vecka</div></div>' +
+        '<input type="number" id="s-weekly-' + i + '" class="settings-input" min="0" step="5" value="' + (kid.weeklyAmount ?? data.weeklyAmount ?? 30) + '" />' +
+      '</div>'
+    ).join('');
+  }
+
+  // ── AUTH ──
   window.doLogin = async function() {
     const email = document.getElementById('login-email').value.trim();
     const pw    = document.getElementById('login-password').value;
     const btn   = document.getElementById('login-btn');
     const err   = document.getElementById('login-error');
-
-    err.style.display = 'none';
-    btn.disabled = true;
-    btn.textContent = 'Loggar in…';
-
+    err.style.display = 'none'; btn.disabled = true; btn.textContent = 'Loggar in…';
     if (IS_DEMO) {
-      // Demo: accept any non-empty credentials
-      if (email && pw) {
-        hide('login-screen');
-        show('app-screen');
-        await initFamily();
-      } else {
-        err.textContent = 'Fyll i e-post och lösenord';
-        err.style.display = 'block';
-      }
-      btn.disabled = false;
-      btn.textContent = 'Logga in';
-      return;
+      if (email && pw) { hide('login-screen'); show('app-screen'); await initFamily(); }
+      else { err.textContent = 'Fyll i e-post och lösenord'; err.style.display = 'block'; }
+      btn.disabled = false; btn.textContent = 'Logga in'; return;
     }
-
     try {
       const { auth, signInWithEmailAndPassword } = window._fb;
       await signInWithEmailAndPassword(auth, email, pw);
-    } catch (e) {
-      err.textContent = 'Fel e-post eller lösenord';
-      err.style.display = 'block';
-      btn.disabled = false;
-      btn.textContent = 'Logga in';
+    } catch(e) {
+      err.textContent = 'Fel e-post eller lösenord'; err.style.display = 'block';
+      btn.disabled = false; btn.textContent = 'Logga in';
     }
   };
-
   window.doLogout = async function() {
     if (unsubSnapshot) { unsubSnapshot(); unsubSnapshot = null; }
-    if (IS_DEMO) {
-      mockAuth.signOut();
-    } else {
-      const { auth, signOut } = window._fb;
-      await signOut(auth);
-    }
+    if (IS_DEMO) { mockAuth.signOut(); }
+    else { const { auth, signOut } = window._fb; await signOut(auth); }
   };
-
-  // Allow Enter key on login form
   document.getElementById('login-password').addEventListener('keydown', e => {
     if (e.key === 'Enter') window.doLogin();
   });
 
-  // ── Bootstrap ──
+  // ── SWIPE DOWN TO CLOSE ──
+  let touchStartY = 0;
+  document.getElementById('sheet').addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; }, { passive: true });
+  document.getElementById('sheet').addEventListener('touchend',   e => { if (e.changedTouches[0].clientY - touchStartY > 60) closeSheet(); }, { passive: true });
+
+  // ── BOOTSTRAP ──
   async function initFamily() {
     await dbEnsureDoc();
-    unsubSnapshot = dbListen(async data => {
-      renderApp(data);
-      await checkPayout(data);
-    });
+    unsubSnapshot = dbListen(async data => { renderApp(data); await checkPayout(data); });
   }
 
-  // ── Auth state ──
+  initTheme();
+
   if (IS_DEMO) {
-    // Show demo banner and go straight to login screen
-    hide('loading-overlay');
-    show('login-screen', 'flex');
-    document.querySelector('.login-title p').textContent = '🔧 Demo-läge – ingen Firebase kopplad';
+    hide('loading-overlay'); show('login-screen', 'flex');
+    document.getElementById('login-subtitle').textContent = '🔧 Demo-läge – ingen Firebase kopplad';
   } else {
     const { auth, onAuthStateChanged } = window._fb;
     onAuthStateChanged(auth, async user => {
       hide('loading-overlay');
-      if (user) {
-        show('app-screen');
-        hide('login-screen');
-        await initFamily();
-      } else {
-        hide('app-screen');
-        show('login-screen', 'flex');
-        if (unsubSnapshot) { unsubSnapshot(); unsubSnapshot = null; }
-      }
+      if (user) { show('app-screen'); hide('login-screen'); await initFamily(); }
+      else { hide('app-screen'); show('login-screen', 'flex'); if (unsubSnapshot) { unsubSnapshot(); unsubSnapshot = null; } }
     });
   }
 </script>

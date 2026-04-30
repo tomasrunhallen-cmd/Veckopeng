@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Veckopeng" />
+  <meta name="theme-color" content="#4f46e5" />
+  <title>Veckopeng</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #4f46e5;
+      --primary-dark: #3730a3;
+      --primary-light: #e0e7ff;
+      --success: #10b981;
+      --danger: #ef4444;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #1e293b;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --radius: 16px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.08);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Login ── */
+    #login-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100dvh;
+      padding: 24px;
+      gap: 32px;
+    }
+
+    .login-logo {
+      font-size: 56px;
+    }
+
+    .login-title {
+      text-align: center;
+    }
+
+    .login-title h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .login-title p {
+      color: var(--muted);
+      margin-top: 6px;
+      font-size: 15px;
+    }
+
+    .login-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 28px 24px;
+      width: 100%;
+      max-width: 380px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .input-group label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    input[type="email"],
+    input[type="password"],
+    input[type="text"],
+    input[type="number"] {
+      padding: 12px 14px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      font-size: 16px;
+      color: var(--text);
+      background: var(--bg);
+      width: 100%;
+      transition: border-color 0.15s;
+      -webkit-appearance: none;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 20px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      width: 100%;
+    }
+
+    .btn-primary:hover:not(:disabled) { background: var(--primary-dark); }
+
+    .error-msg {
+      background: #fef2f2;
+      color: #b91c1c;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 14px;
+      display: none;
+    }
+
+    /* ── App ── */
+    #app-screen { display: none; }
+
+    .app-header {
+      background: var(--primary);
+      color: #fff;
+      padding: 20px 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .app-header h1 {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      border-radius: 10px;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 18px;
+      color: #fff;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.15s;
+    }
+
+    .icon-btn:active { background: rgba(255,255,255,0.35); }
+
+    .main-content {
+      padding: 0 16px 100px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* ── Kids grid ── */
+    .kids-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: -16px;
+    }
+
+    @media (max-width: 360px) {
+      .kids-grid { grid-template-columns: 1fr; }
+    }
+
+    .kid-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .kid-avatar {
+      font-size: 40px;
+      line-height: 1;
+    }
+
+    .kid-name-display {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .kid-name-display .edit-icon {
+      font-size: 12px;
+      color: var(--muted);
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    .kid-name-display:hover .edit-icon { opacity: 1; }
+
+    .kid-name-input {
+      font-size: 16px;
+      font-weight: 700;
+      text-align: center;
+      padding: 4px 8px;
+      border: 2px solid var(--primary);
+      border-radius: 8px;
+      width: 100%;
+      display: none;
+    }
+
+    .kid-balance {
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--primary);
+      letter-spacing: -1px;
+    }
+
+    .kid-balance.negative { color: var(--danger); }
+
+    .balance-label {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    /* ── Quick buttons ── */
+    .quick-btns {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 4px;
+    }
+
+    .q-btn {
+      border: none;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+
+    .q-btn:active { transform: scale(0.93); }
+
+    .q-btn.plus {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .q-btn.minus {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    /* ── Custom amount ── */
+    .custom-row {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+      width: 100%;
+    }
+
+    .custom-row input {
+      flex: 1;
+      min-width: 0;
+      padding: 8px 10px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 15px;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-appearance: none;
+    }
+
+    .custom-row input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .custom-row .q-btn {
+      padding: 8px 10px;
+      font-size: 18px;
+    }
+
+    /* ── Section headers ── */
+    .section-header {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin: 24px 0 10px;
+    }
+
+    /* ── Settings panel ── */
+    #settings-panel {
+      display: none;
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      margin-top: -16px;
+    }
+
+    .settings-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+      gap: 12px;
+    }
+
+    .settings-row:last-child { border-bottom: none; }
+
+    .settings-label {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .settings-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .settings-row input[type="number"],
+    .settings-row select {
+      width: 110px;
+      padding: 8px 10px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 15px;
+      color: var(--text);
+      background: var(--bg);
+      -webkit-appearance: none;
+      text-align: right;
+    }
+
+    .settings-row select {
+      text-align: left;
+    }
+
+    .settings-row input:focus,
+    .settings-row select:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .save-btn {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 16px;
+      transition: opacity 0.15s;
+    }
+
+    .save-btn:active { opacity: 0.8; }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #1e293b;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+      transition: transform 0.3s ease;
+      z-index: 999;
+      pointer-events: none;
+    }
+
+    #toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ── Loading ── */
+    #loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+      z-index: 100;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Next payout info ── */
+    .payout-info {
+      background: var(--primary-light);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-top: -8px;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: var(--primary-dark);
+      font-weight: 500;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="loading-overlay">
+  <div style="font-size:48px">🐷</div>
+  <div class="spinner"></div>
+</div>
+
+<!-- Login -->
+<div id="login-screen" style="display:none">
+  <div class="login-logo">🐷</div>
+  <div class="login-title">
+    <h1>Veckopeng</h1>
+    <p>Logga in för att fortsätta</p>
+  </div>
+  <div class="login-card">
+    <div class="input-group">
+      <label>E-postadress</label>
+      <input type="email" id="login-email" placeholder="din@email.se" autocomplete="email" />
+    </div>
+    <div class="input-group">
+      <label>Lösenord</label>
+      <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" />
+    </div>
+    <div class="error-msg" id="login-error"></div>
+    <button class="btn btn-primary" id="login-btn" onclick="doLogin()">Logga in</button>
+  </div>
+</div>
+
+<!-- App -->
+<div id="app-screen">
+  <div class="app-header">
+    <h1>🐷 Veckopeng</h1>
+    <div class="header-actions">
+      <button class="icon-btn" onclick="toggleSettings()" title="Inställningar">⚙️</button>
+      <button class="icon-btn" onclick="doLogout()" title="Logga ut">🚪</button>
+    </div>
+  </div>
+
+  <div class="main-content">
+
+    <!-- Payout info -->
+    <p class="payout-info" id="payout-info">Laddar...</p>
+
+    <!-- Kids -->
+    <div class="kids-grid" id="kids-grid">
+      <!-- Rendered by JS -->
+    </div>
+
+    <!-- Settings -->
+    <p class="section-header" id="settings-heading" style="display:none">Inställningar</p>
+    <div id="settings-panel">
+      <div id="s-kids-amounts"><!-- rendered by JS --></div>
+      <div class="settings-row">
+        <div>
+          <div class="settings-label">Utbetalningsdag</div>
+          <div class="settings-sub">Veckodag</div>
+        </div>
+        <select id="s-payday">
+          <option value="1">Måndag</option>
+          <option value="2">Tisdag</option>
+          <option value="3">Onsdag</option>
+          <option value="4">Torsdag</option>
+          <option value="5">Fredag</option>
+          <option value="6">Lördag</option>
+          <option value="0">Söndag</option>
+        </select>
+      </div>
+      <button class="save-btn" onclick="saveSettings()">💾 Spara inställningar</button>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- Firebase -->
+<script type="module">
+  // ── CONFIG: Klistra in ditt Firebase-config-objekt här ──
+  const firebaseConfig = {
+    apiKey: "AIzaSyCg4QS28Vl2MtBIlBsJNkXxLwbhqiXwa_4",
+    authDomain: "veckopeng-66b0f.firebaseapp.com",
+    projectId: "veckopeng-66b0f",
+    storageBucket: "veckopeng-66b0f.firebasestorage.app",
+    messagingSenderId: "469548453051",
+    appId: "1:469548453051:web:4cfff2ad0edc71cfa6ed9e"
+  };
+
+  const IS_DEMO = firebaseConfig.apiKey.startsWith('REPLACE_');
+
+  // ── Demo mode (no Firebase) ──
+  let demoData = {
+    weeklyAmount: 30,
+    payDay: 1,
+    lastPayout: new Date().toISOString(),
+    kids: [{ name: 'Barn 1', balance: 150 }, { name: 'Barn 2', balance: 80 }]
+  };
+
+  let demoListeners = [];
+  function demoNotify() { demoListeners.forEach(fn => fn(demoData)); }
+
+  const mockDb = {
+    updateDoc: async (_, patch) => { Object.assign(demoData, patch); demoNotify(); },
+    onSnapshot: (_, cb) => { demoListeners.push(cb); cb(demoData); return () => { demoListeners = demoListeners.filter(f => f !== cb); }; },
+    getDoc: async () => ({ exists: () => true, data: () => demoData }),
+    setDoc: async (_, d) => { demoData = d; demoNotify(); }
+  };
+
+  const mockAuth = {
+    signIn: async () => {},
+    signOut: async () => { hide('app-screen'); show('login-screen', 'flex'); },
+    currentUser: { email: 'demo@exempel.se' }
+  };
+
+  // ── Real Firebase (only loaded when config is present) ──
+  let app, auth, db;
+  if (!IS_DEMO) {
+    const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+    const { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence }
+      = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+    const { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot }
+      = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+
+    app  = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db   = getFirestore(app);
+    setPersistence(auth, browserLocalPersistence);
+
+    // Expose real Firebase functions to the rest of the script
+    window._fb = { auth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
+                   db, doc, getDoc, setDoc, updateDoc, onSnapshot };
+  }
+
+  const FAMILY_DOC = 'families/main';
+
+  let unsubSnapshot = null;
+  let localData     = null;
+
+  // ── Helpers ──
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  function hide(id)   { document.getElementById(id).style.display = 'none'; }
+  function show(id, d='block') { document.getElementById(id).style.display = d; }
+
+  function fmtAmount(n) {
+    return (n >= 0 ? '' : '−') + Math.abs(Math.round(n)) + ' kr';
+  }
+
+  function getDayName(d) {
+    return ['Söndag','Måndag','Tisdag','Onsdag','Torsdag','Fredag','Lördag'][d];
+  }
+
+  // Returns the most recent occurrence of weekday `wd` (0=Sun…6=Sat) on or before `date`
+  function lastOccurrence(date, wd) {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    const diff = (d.getDay() - wd + 7) % 7;
+    d.setDate(d.getDate() - diff);
+    return d;
+  }
+
+  // ── Payout logic ──
+  async function checkPayout(data) {
+    const today   = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const payDay  = data.payDay ?? 1;
+    const weekly  = data.weeklyAmount ?? 30;
+    const lastPay = data.lastPayout ? new Date(data.lastPayout) : null;
+
+    const lastDue = lastOccurrence(today, payDay);
+
+    if (!lastPay) {
+      await dbUpdate({ lastPayout: today.toISOString() });
+      return;
+    }
+
+    const lastPayDay = new Date(lastPay);
+    lastPayDay.setHours(0, 0, 0, 0);
+
+    if (lastDue <= lastPayDay) return; // already paid
+
+    // Count missed weeks
+    const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+    const missed    = Math.round((lastDue - lastPayDay) / msPerWeek);
+    if (missed <= 0) return;
+
+    const newKids = data.kids.map(k => {
+      const amount = (k.weeklyAmount ?? weekly) * missed;
+      return { ...k, balance: (k.balance || 0) + amount };
+    });
+
+    await dbUpdate({ kids: newKids, lastPayout: lastDue.toISOString() });
+
+    showToast(`Veckopeng utbetalad (${missed} vecka${missed > 1 ? 'r' : ''})`);
+  }
+
+  // ── Render ──
+  function renderApp(data) {
+    localData = data;
+
+    // Payout info
+    const payDay        = data.payDay ?? 1;
+    const todayMidnight = new Date(); todayMidnight.setHours(0, 0, 0, 0);
+    const lastDue       = lastOccurrence(todayMidnight, payDay);
+    const next          = new Date(lastDue);
+    if (next.getTime() < todayMidnight.getTime()) next.setDate(next.getDate() + 7);
+    const diffDays  = Math.round((next - todayMidnight) / (24*60*60*1000));
+    const dayLabel  = diffDays === 0 ? 'idag' : diffDays === 1 ? 'imorgon' : `om ${diffDays} dagar`;
+    document.getElementById('payout-info').textContent =
+      `Nästa utbetalning ${getDayName(payDay)} – ${dayLabel}`;
+
+    // Kids
+    const grid = document.getElementById('kids-grid');
+    grid.innerHTML = '';
+    const avatars = ['🐱', '🦊'];
+
+    (data.kids || []).forEach((kid, i) => {
+      const bal    = Math.round(kid.balance || 0);
+      const balCls = bal < 0 ? 'negative' : '';
+
+      const card = document.createElement('div');
+      card.className = 'kid-card';
+      card.innerHTML = `
+        <div class="kid-avatar">${avatars[i] || '🧒'}</div>
+        <div class="kid-name-display" id="name-display-${i}" onclick="editName(${i})">
+          <span id="name-text-${i}">${escHtml(kid.name)}</span>
+          <span class="edit-icon">✏️</span>
+        </div>
+        <input class="kid-name-input" id="name-input-${i}" value="${escHtml(kid.name)}"
+               onblur="saveName(${i})" onkeydown="nameKey(event,${i})" />
+        <div class="kid-balance ${balCls}" id="balance-${i}">${fmtAmount(bal)}</div>
+        <div class="balance-label">saldo</div>
+        <div class="quick-btns">
+          ${[5,10,20,50].map(v => `
+            <button class="q-btn plus" onclick="adjust(${i},${v})">+${v}</button>
+          `).join('')}
+          ${[5,10,20,50].map(v => `
+            <button class="q-btn minus" onclick="adjust(${i},-${v})">−${v}</button>
+          `).join('')}
+        </div>
+        <div class="custom-row">
+          <input type="number" id="custom-${i}" placeholder="Belopp" min="0" step="1" />
+          <button class="q-btn plus" onclick="adjustCustom(${i},1)">+</button>
+          <button class="q-btn minus" onclick="adjustCustom(${i},-1)">−</button>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+
+    // Settings
+    document.getElementById('s-payday').value = data.payDay ?? 1;
+    document.getElementById('s-kids-amounts').innerHTML = (data.kids || []).map((kid, i) => `
+      <div class="settings-row">
+        <div>
+          <div class="settings-label">${escHtml(kid.name)}</div>
+          <div class="settings-sub">kr per vecka</div>
+        </div>
+        <input type="number" id="s-weekly-${i}" min="0" step="5"
+               value="${kid.weeklyAmount ?? data.weeklyAmount ?? 30}" />
+      </div>
+    `).join('');
+  }
+
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── Name editing ──
+  window.editName = function(i) {
+    document.getElementById(`name-display-${i}`).style.display = 'none';
+    const inp = document.getElementById(`name-input-${i}`);
+    inp.style.display = 'block';
+    inp.focus();
+    inp.select();
+  };
+
+  window.nameKey = function(e, i) {
+    if (e.key === 'Enter') document.getElementById(`name-input-${i}`).blur();
+  };
+
+  // ── DB helpers (real or demo) ──
+  async function dbUpdate(patch) {
+    if (IS_DEMO) {
+      await mockDb.updateDoc(null, patch);
+    } else {
+      const { db, doc, updateDoc } = window._fb;
+      await updateDoc(doc(db, FAMILY_DOC), patch);
+    }
+  }
+
+  function dbListen(cb) {
+    if (IS_DEMO) {
+      return mockDb.onSnapshot(null, cb);
+    } else {
+      const { db, doc, onSnapshot } = window._fb;
+      return onSnapshot(doc(db, FAMILY_DOC), snap => cb(snap.data()));
+    }
+  }
+
+  async function dbEnsureDoc() {
+    if (IS_DEMO) return;
+    const { db, doc, getDoc, setDoc } = window._fb;
+    const ref  = doc(db, FAMILY_DOC);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) {
+      await setDoc(ref, {
+        weeklyAmount: 30, payDay: 1, lastPayout: null,
+        kids: [{ name: 'Barn 1', balance: 0, weeklyAmount: 30 }, { name: 'Barn 2', balance: 0, weeklyAmount: 30 }]
+      });
+    }
+  }
+
+  window.saveName = async function(i) {
+    const inp  = document.getElementById(`name-input-${i}`);
+    const name = inp.value.trim() || localData.kids[i].name;
+    inp.style.display = 'none';
+    document.getElementById(`name-display-${i}`).style.display = 'flex';
+
+    if (name === localData.kids[i].name) return;
+
+    const kids = localData.kids.map((k, j) => j === i ? { ...k, name } : k);
+    await dbUpdate({ kids });
+    showToast('Namn sparat');
+  };
+
+  // ── Balance adjustments ──
+  window.adjust = async function(i, delta) {
+    if (!localData) return;
+    const kids = localData.kids.map((k, j) =>
+      j === i ? { ...k, balance: (k.balance || 0) + delta } : k
+    );
+    await dbUpdate({ kids });
+    showToast((delta > 0 ? '+' : '') + delta + ' kr');
+  };
+
+  window.adjustCustom = async function(i, sign) {
+    const inp = document.getElementById(`custom-${i}`);
+    const val = parseFloat(inp.value);
+    if (!val || val <= 0) { inp.focus(); return; }
+    await window.adjust(i, sign * val);
+    inp.value = '';
+  };
+
+  // ── Settings ──
+  window.toggleSettings = function() {
+    const panel   = document.getElementById('settings-panel');
+    const heading = document.getElementById('settings-heading');
+    const open    = panel.style.display !== 'block';
+    panel.style.display   = open ? 'block' : 'none';
+    heading.style.display = open ? 'block' : 'none';
+  };
+
+  window.saveSettings = async function() {
+    const payDay = parseInt(document.getElementById('s-payday').value, 10);
+    const kids   = localData.kids.map((k, i) => {
+      const val = parseFloat(document.getElementById(`s-weekly-${i}`)?.value);
+      return { ...k, weeklyAmount: isNaN(val) || val < 0 ? (k.weeklyAmount ?? 30) : val };
+    });
+    await dbUpdate({ kids, payDay });
+    showToast('Inställningar sparade');
+  };
+
+  // ── Auth ──
+  window.doLogin = async function() {
+    const email = document.getElementById('login-email').value.trim();
+    const pw    = document.getElementById('login-password').value;
+    const btn   = document.getElementById('login-btn');
+    const err   = document.getElementById('login-error');
+
+    err.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = 'Loggar in…';
+
+    if (IS_DEMO) {
+      // Demo: accept any non-empty credentials
+      if (email && pw) {
+        hide('login-screen');
+        show('app-screen');
+        await initFamily();
+      } else {
+        err.textContent = 'Fyll i e-post och lösenord';
+        err.style.display = 'block';
+      }
+      btn.disabled = false;
+      btn.textContent = 'Logga in';
+      return;
+    }
+
+    try {
+      const { auth, signInWithEmailAndPassword } = window._fb;
+      await signInWithEmailAndPassword(auth, email, pw);
+    } catch (e) {
+      err.textContent = 'Fel e-post eller lösenord';
+      err.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Logga in';
+    }
+  };
+
+  window.doLogout = async function() {
+    if (unsubSnapshot) { unsubSnapshot(); unsubSnapshot = null; }
+    if (IS_DEMO) {
+      mockAuth.signOut();
+    } else {
+      const { auth, signOut } = window._fb;
+      await signOut(auth);
+    }
+  };
+
+  // Allow Enter key on login form
+  document.getElementById('login-password').addEventListener('keydown', e => {
+    if (e.key === 'Enter') window.doLogin();
+  });
+
+  // ── Bootstrap ──
+  async function initFamily() {
+    await dbEnsureDoc();
+    unsubSnapshot = dbListen(async data => {
+      renderApp(data);
+      await checkPayout(data);
+    });
+  }
+
+  // ── Auth state ──
+  if (IS_DEMO) {
+    // Show demo banner and go straight to login screen
+    hide('loading-overlay');
+    show('login-screen', 'flex');
+    document.querySelector('.login-title p').textContent = '🔧 Demo-läge – ingen Firebase kopplad';
+  } else {
+    const { auth, onAuthStateChanged } = window._fb;
+    onAuthStateChanged(auth, async user => {
+      hide('loading-overlay');
+      if (user) {
+        show('app-screen');
+        hide('login-screen');
+        await initFamily();
+      } else {
+        hide('app-screen');
+        show('login-screen', 'flex');
+        if (unsubSnapshot) { unsubSnapshot(); unsubSnapshot = null; }
+      }
+    });
+  }
+</script>
+
+</body>
+</html>
