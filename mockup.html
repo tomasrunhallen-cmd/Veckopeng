@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="sv" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Veckopeng – Mockup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root[data-theme="dark"] {
+      --bg:        #0d0d14;
+      --surface:   #16161f;
+      --card:      #1e1e2a;
+      --border:    rgba(255,255,255,0.07);
+      --text:      #f0f0f8;
+      --muted:     #6b7280;
+      --sub:       #9ca3af;
+      --sheet-bg:  #1a1a26;
+      --chip-bg:   #2a2a38;
+      --chip-text: #c4c4d4;
+      --toggle-bg: #2a2a38;
+    }
+    :root[data-theme="light"] {
+      --bg:        #f0f0f7;
+      --surface:   #ffffff;
+      --card:      #ffffff;
+      --border:    rgba(0,0,0,0.07);
+      --text:      #0f0f18;
+      --muted:     #6b7280;
+      --sub:       #374151;
+      --sheet-bg:  #ffffff;
+      --chip-bg:   #f3f4f6;
+      --chip-text: #374151;
+      --toggle-bg: #e5e7eb;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      transition: background 0.3s, color 0.3s;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 20px 16px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-left { display: flex; align-items: center; gap: 10px; }
+
+    .header-logo { font-size: 22px; }
+
+    .header-title {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    .header-right { display: flex; align-items: center; gap: 8px; }
+
+    .icon-btn {
+      width: 36px; height: 36px;
+      background: var(--toggle-bg);
+      border: none;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      cursor: pointer;
+      color: var(--text);
+      transition: background 0.15s, transform 0.1s;
+    }
+    .icon-btn:active { transform: scale(0.92); }
+
+    /* ── PAYOUT STRIP ── */
+    .payout-strip {
+      margin: 16px 16px 0;
+      background: rgba(139, 92, 246, 0.12);
+      border: 1px solid rgba(139, 92, 246, 0.25);
+      border-radius: 12px;
+      padding: 10px 16px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 500;
+      color: #a78bfa;
+    }
+
+    /* ── CARDS ── */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 14px 16px 0;
+    }
+    @media (max-width: 360px) {
+      .cards-grid { grid-template-columns: 1fr; }
+    }
+
+    .kid-card {
+      background: var(--card);
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      padding: 22px 16px 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s;
+    }
+    .kid-card:active { transform: scale(0.97); }
+
+    /* glöd-effekt */
+    .kid-card::before {
+      content: '';
+      position: absolute;
+      top: -40px; left: 50%;
+      transform: translateX(-50%);
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      filter: blur(40px);
+      opacity: 0.18;
+      pointer-events: none;
+    }
+    .kid-card.violet::before { background: #a78bfa; }
+    .kid-card.orange::before { background: #fb923c; }
+
+    .kid-avatar { font-size: 38px; line-height: 1; margin-bottom: 2px; }
+
+    .kid-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--sub);
+      letter-spacing: 0.2px;
+    }
+
+    .kid-balance {
+      font-size: clamp(44px, 10vw, 64px);
+      font-weight: 800;
+      letter-spacing: -2px;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+      margin: 6px 0 4px;
+    }
+    .kid-card.violet .kid-balance { color: #c4b5fd; }
+    .kid-card.orange .kid-balance { color: #fdba74; }
+
+    .kid-unit {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--muted);
+      margin-top: -4px;
+    }
+
+    .change-btn {
+      margin-top: 12px;
+      width: 100%;
+      padding: 11px 0;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.12s;
+      letter-spacing: 0.1px;
+    }
+    .change-btn:active { transform: scale(0.95); opacity: 0.85; }
+    .kid-card.violet .change-btn {
+      background: rgba(167, 139, 250, 0.15);
+      color: #a78bfa;
+    }
+    .kid-card.orange .change-btn {
+      background: rgba(251, 146, 60, 0.15);
+      color: #fb923c;
+    }
+
+    /* ── OVERLAY ── */
+    .overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      z-index: 40;
+    }
+    .overlay.show { opacity: 1; pointer-events: all; }
+
+    /* ── BOTTOM SHEET ── */
+    .bottom-sheet {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--sheet-bg);
+      border-radius: 24px 24px 0 0;
+      padding: 0 20px 36px;
+      transform: translateY(110%);
+      transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+      z-index: 50;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .bottom-sheet.open { transform: translateY(0); }
+
+    .sheet-handle {
+      width: 36px; height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin: 14px auto 20px;
+    }
+
+    .sheet-title {
+      font-size: 17px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 18px;
+      color: var(--text);
+    }
+
+    .sheet-title span { color: #a78bfa; }
+    .sheet-title.orange span { color: #fb923c; }
+
+    .chips {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+    .chip {
+      flex: 1;
+      padding: 9px 4px;
+      background: var(--chip-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--chip-text);
+      cursor: pointer;
+      text-align: center;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .chip:active { transform: scale(0.93); }
+    .chip.selected {
+      background: rgba(167, 139, 250, 0.2);
+      border-color: #a78bfa;
+      color: #a78bfa;
+    }
+
+    .amount-input-wrap {
+      position: relative;
+      margin-bottom: 20px;
+    }
+    .amount-input {
+      width: 100%;
+      background: var(--chip-bg);
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 56px 18px 20px;
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--text);
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+      font-family: inherit;
+      transition: border-color 0.15s;
+      -webkit-appearance: none;
+    }
+    .amount-input:focus {
+      outline: none;
+      border-color: #a78bfa;
+    }
+    .amount-unit {
+      position: absolute;
+      right: 18px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .sheet-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .sheet-btn {
+      padding: 16px;
+      border: none;
+      border-radius: 14px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.12s;
+      font-family: inherit;
+    }
+    .sheet-btn:active { transform: scale(0.96); }
+    .sheet-btn.add { background: #10b981; color: #fff; }
+    .sheet-btn.sub { background: #ef4444; color: #fff; }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 24px; left: 16px; right: 16px;
+      max-width: 420px;
+      margin: 0 auto;
+      background: #1e1e2a;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.3s;
+      z-index: 60;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast-text { font-size: 14px; font-weight: 500; color: #f0f0f8; }
+    .toast-undo {
+      background: rgba(167, 139, 250, 0.2);
+      border: 1px solid #a78bfa;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #a78bfa;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      font-family: inherit;
+    }
+
+    /* ── SETTINGS (preview) ── */
+    .settings-preview {
+      margin: 20px 16px 0;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+    .settings-header {
+      padding: 16px 18px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+    .settings-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      border-top: 1px solid var(--border);
+    }
+    .settings-label { font-size: 15px; font-weight: 500; }
+    .settings-value {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    /* ── DEMO LABEL ── */
+    .demo-label {
+      text-align: center;
+      padding: 24px 16px 8px;
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* ── PROGRESS BAR ── */
+    .toast-progress {
+      position: absolute;
+      bottom: 0; left: 0;
+      height: 2px;
+      background: #a78bfa;
+      border-radius: 0 0 16px 16px;
+      width: 100%;
+      transform-origin: left;
+      transform: scaleX(1);
+    }
+    .toast.show .toast-progress {
+      animation: shrink 6s linear forwards;
+    }
+    @keyframes shrink { to { transform: scaleX(0); } }
+
+    /* balance count-up animation */
+    @keyframes pop { 0%{transform:scale(1)} 40%{transform:scale(1.12)} 100%{transform:scale(1)} }
+    .balance-pop { animation: pop 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <span class="header-logo">🐷</span>
+    <span class="header-title">Veckopeng</span>
+  </div>
+  <div class="header-right">
+    <button class="icon-btn" onclick="toggleTheme()" id="theme-btn">🌙</button>
+    <button class="icon-btn" onclick="toggleSettings()">⚙️</button>
+    <button class="icon-btn">🚪</button>
+  </div>
+</div>
+
+<!-- PAYOUT STRIP -->
+<div class="payout-strip">
+  Nästa utbetalning Måndag – om 3 dagar
+</div>
+
+<!-- CARDS -->
+<div class="cards-grid">
+
+  <div class="kid-card violet" onclick="openSheet(0)">
+    <div class="kid-avatar">🐱</div>
+    <div class="kid-name">Rut</div>
+    <div class="kid-balance" id="bal-0">285</div>
+    <div class="kid-unit">kr</div>
+    <button class="change-btn" onclick="openSheet(0); event.stopPropagation()">Ändra saldo</button>
+  </div>
+
+  <div class="kid-card orange" onclick="openSheet(1)">
+    <div class="kid-avatar">🦊</div>
+    <div class="kid-name">Tage</div>
+    <div class="kid-balance" id="bal-1">140</div>
+    <div class="kid-unit">kr</div>
+    <button class="change-btn" onclick="openSheet(1); event.stopPropagation()">Ändra saldo</button>
+  </div>
+
+</div>
+
+<!-- SETTINGS PREVIEW -->
+<div class="settings-preview" id="settings-panel" style="display:none">
+  <div class="settings-header">Inställningar</div>
+  <div class="settings-row">
+    <span class="settings-label">🐱 Rut – veckopeng</span>
+    <span class="settings-value">30 kr</span>
+  </div>
+  <div class="settings-row">
+    <span class="settings-label">🦊 Tage – veckopeng</span>
+    <span class="settings-value">25 kr</span>
+  </div>
+  <div class="settings-row">
+    <span class="settings-label">Utbetalningsdag</span>
+    <span class="settings-value">Måndag</span>
+  </div>
+</div>
+
+<div class="demo-label">Design mockup – ej kopplad till Firebase</div>
+
+<!-- OVERLAY -->
+<div class="overlay" id="overlay" onclick="closeSheet()"></div>
+
+<!-- BOTTOM SHEET -->
+<div class="bottom-sheet" id="sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title" id="sheet-title">Ändra saldo – <span>Rut</span></div>
+  <div class="chips">
+    <div class="chip" onclick="setChip(5)">5</div>
+    <div class="chip" onclick="setChip(10)">10</div>
+    <div class="chip" onclick="setChip(20)" id="chip-20">20</div>
+    <div class="chip" onclick="setChip(50)">50</div>
+  </div>
+  <div class="amount-input-wrap">
+    <input class="amount-input" id="amount-input" type="number" value="20" min="0" />
+    <span class="amount-unit">kr</span>
+  </div>
+  <div class="sheet-actions">
+    <button class="sheet-btn add" onclick="doAdjust(1)">＋ Lägg till</button>
+    <button class="sheet-btn sub" onclick="doAdjust(-1)">− Ta bort</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast" style="position:fixed">
+  <span class="toast-text" id="toast-text">+20 kr till Rut</span>
+  <button class="toast-undo" onclick="doUndo()">Ångra</button>
+  <div class="toast-progress"></div>
+</div>
+
+<script>
+  let balances   = [285, 140];
+  let names      = ['Rut', 'Tage'];
+  let activeKid  = 0;
+  let toastTimer = null;
+  let lastDelta  = 0;
+  let chipSelected = 20;
+
+  // pre-select chip 20
+  document.getElementById('chip-20').classList.add('selected');
+
+  function toggleTheme() {
+    const html = document.documentElement;
+    const dark = html.getAttribute('data-theme') === 'dark';
+    html.setAttribute('data-theme', dark ? 'light' : 'dark');
+    document.getElementById('theme-btn').textContent = dark ? '☀️' : '🌙';
+  }
+
+  function toggleSettings() {
+    const p = document.getElementById('settings-panel');
+    p.style.display = p.style.display === 'none' ? 'block' : 'none';
+  }
+
+  function openSheet(kidIdx) {
+    activeKid = kidIdx;
+    const title = document.getElementById('sheet-title');
+    const isOrange = kidIdx === 1;
+    title.className = 'sheet-title' + (isOrange ? ' orange' : '');
+    title.innerHTML = `Ändra saldo – <span>${names[kidIdx]}</span>`;
+    document.getElementById('amount-input').value = chipSelected;
+    document.getElementById('overlay').classList.add('show');
+    document.getElementById('sheet').classList.add('open');
+    setTimeout(() => document.getElementById('amount-input').focus(), 350);
+  }
+
+  function closeSheet() {
+    document.getElementById('overlay').classList.remove('show');
+    document.getElementById('sheet').classList.remove('open');
+  }
+
+  function setChip(val) {
+    chipSelected = val;
+    document.getElementById('amount-input').value = val;
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+    event.target.classList.add('selected');
+  }
+
+  function doAdjust(sign) {
+    const val = parseFloat(document.getElementById('amount-input').value) || 0;
+    if (val <= 0) return;
+    lastDelta = sign * val;
+    balances[activeKid] += lastDelta;
+    updateBalance(activeKid);
+    closeSheet();
+    showToast(activeKid, lastDelta);
+  }
+
+  function updateBalance(i) {
+    const el = document.getElementById(`bal-${i}`);
+    el.textContent = Math.round(balances[i]);
+    el.classList.remove('balance-pop');
+    void el.offsetWidth;
+    el.classList.add('balance-pop');
+  }
+
+  function showToast(kidIdx, delta) {
+    if (toastTimer) clearTimeout(toastTimer);
+    const sign = delta > 0 ? '+' : '−';
+    document.getElementById('toast-text').textContent =
+      `${sign}${Math.abs(delta)} kr till ${names[kidIdx]}`;
+
+    const toast = document.getElementById('toast');
+    // Reset progress animation
+    toast.classList.remove('show');
+    void toast.offsetWidth;
+    toast.classList.add('show');
+
+    toastTimer = setTimeout(() => {
+      toast.classList.remove('show');
+    }, 6000);
+  }
+
+  function doUndo() {
+    if (!lastDelta) return;
+    balances[activeKid] -= lastDelta;
+    updateBalance(activeKid);
+    lastDelta = 0;
+    document.getElementById('toast').classList.remove('show');
+    clearTimeout(toastTimer);
+  }
+
+  // Touch swipe down to close sheet
+  let startY = 0;
+  document.getElementById('sheet').addEventListener('touchstart', e => {
+    startY = e.touches[0].clientY;
+  }, { passive: true });
+  document.getElementById('sheet').addEventListener('touchend', e => {
+    if (e.changedTouches[0].clientY - startY > 60) closeSheet();
+  }, { passive: true });
+
+  // Demo: show toast after 1s
+  setTimeout(() => showToast(0, 20), 800);
+</script>
+</body>
+</html>
