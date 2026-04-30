@@ -473,11 +473,11 @@
   <div class="chips">
     <div class="chip" onclick="setChip(5)">5</div>
     <div class="chip" onclick="setChip(10)">10</div>
-    <div class="chip" onclick="setChip(20)" id="chip-20">20</div>
+    <div class="chip" onclick="setChip(20)">20</div>
     <div class="chip" onclick="setChip(50)">50</div>
   </div>
   <div class="amount-input-wrap">
-    <input class="amount-input" id="amount-input" type="number" value="20" min="0" />
+    <input class="amount-input" id="amount-input" type="number" value="" placeholder="0" min="0" />
     <span class="amount-unit">kr</span>
   </div>
   <div class="sheet-actions">
@@ -499,10 +499,9 @@
   let activeKid  = 0;
   let toastTimer = null;
   let lastDelta  = 0;
-  let chipSelected = 20;
+  let chipSelected = null;
 
   // pre-select chip 20
-  document.getElementById('chip-20').classList.add('selected');
 
   function toggleTheme() {
     const html = document.documentElement;
@@ -522,7 +521,7 @@
     const isOrange = kidIdx === 1;
     title.className = 'sheet-title' + (isOrange ? ' orange' : '');
     title.innerHTML = `Ändra saldo – <span>${names[kidIdx]}</span>`;
-    document.getElementById('amount-input').value = chipSelected;
+    document.getElementById('amount-input').value = '';
     document.getElementById('overlay').classList.add('show');
     document.getElementById('sheet').classList.add('open');
     setTimeout(() => document.getElementById('amount-input').focus(), 350);
