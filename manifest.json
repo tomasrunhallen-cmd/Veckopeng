@@ -1,11 +1,11 @@
 {
-  "name": "Veckopeng",
-  "short_name": "Veckopeng",
-  "description": "Håll koll på barnens veckopeng",
+  "name": "Spargris",
+  "short_name": "Spargris",
+  "description": "Håll koll på barnens sparande",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#f8fafc",
-  "theme_color": "#4f46e5",
+  "background_color": "#0d0d14",
+  "theme_color": "#a78bfa",
   "icons": [
     {
       "src": "icon-192.png",

@@ -6,9 +6,9 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Veckopeng" />
+  <meta name="apple-mobile-web-app-title" content="Spargris" />
   <meta name="theme-color" content="#4f46e5" />
-  <title>Veckopeng</title>
+  <title>Spargris</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icon-192.png" />
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
@@ -484,7 +484,7 @@
 <div id="login-screen" style="display:none">
   <div class="login-logo">🐷</div>
   <div class="login-title">
-    <h1>Veckopeng</h1>
+    <h1>Spargris</h1>
     <p>Logga in för att fortsätta</p>
   </div>
   <div class="login-card">
@@ -504,7 +504,7 @@
 <!-- App -->
 <div id="app-screen">
   <div class="app-header">
-    <h1>🐷 Veckopeng</h1>
+    <h1>🐷 Spargris</h1>
     <div class="header-actions">
       <button class="icon-btn" onclick="toggleSettings()" title="Inställningar">⚙️</button>
       <button class="icon-btn" onclick="doLogout()" title="Logga ut">🚪</button>
@@ -671,7 +671,7 @@
 
     await dbUpdate({ kids: newKids, lastPayout: lastDue.toISOString() });
 
-    showToast(`Veckopeng utbetalad (${missed} vecka${missed > 1 ? 'r' : ''})`);
+    showToast(`Spargris utbetalad (${missed} vecka${missed > 1 ? 'r' : ''})`);
   }
 
   // ── Render ──
