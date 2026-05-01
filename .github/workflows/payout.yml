@@ -1,0 +1,24 @@
+name: Veckopeng – schemalagd utbetalning
+
+on:
+  schedule:
+    - cron: '0 6 * * *'   # 06:00 UTC = 07:00 CET varje dag, skriptet kollar veckodag
+  workflow_dispatch:        # Manuell trigger från GitHub → Actions-fliken
+
+jobs:
+  payout:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Installera firebase-admin
+        run: npm install firebase-admin
+
+      - name: Kör utbetalningsskript
+        run: node scripts/payout.js
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}

@@ -206,6 +206,13 @@
       transition: opacity 0.15s, transform 0.1s; -webkit-tap-highlight-color: transparent;
     }
     .save-btn:active { transform: scale(0.97); }
+    .payout-now-btn {
+      width: 100%; margin-top: 8px; padding: 15px; background: #10b981; color: #fff;
+      border: none; border-radius: 14px; font-size: 15px; font-weight: 700;
+      cursor: pointer; font-family: inherit;
+      transition: opacity 0.15s, transform 0.1s; -webkit-tap-highlight-color: transparent;
+    }
+    .payout-now-btn:active { transform: scale(0.97); }
 
     /* OVERLAY */
     .overlay {
@@ -374,6 +381,7 @@
         </div>
       </div>
       <button class="save-btn" onclick="saveSettings()">Spara inställningar</button>
+      <button class="payout-now-btn" onclick="forcePayoutNow()">Utbetala nu</button>
     </div>
   </div>
 </div>
@@ -599,6 +607,17 @@
     s.style.display = opening ? 'block' : 'none';
     if (opening) setTimeout(() => s.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
   };
+  window.forcePayoutNow = async function() {
+    if (!localData) return;
+    const weekly  = localData.weeklyAmount ?? 30;
+    const newKids = localData.kids.map(k => ({
+      ...k, balance: (k.balance || 0) + (k.weeklyAmount ?? weekly)
+    }));
+    pendingPop = 0;
+    await dbUpdate({ kids: newKids, lastPayout: new Date().toISOString() });
+    showSimpleToast('Veckopeng utbetald!');
+  };
+
   window.saveSettings = async function() {
     const payDay = parseInt(document.getElementById('s-payday').value, 10);
     const kids = localData.kids.map((k, i) => {
