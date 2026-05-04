@@ -37,6 +37,9 @@ service cloud.firestore {
   match /databases/{database}/documents {
     match /families/{docId} {
       allow read, write: if request.auth != null;
+      match /transactions/{txId} {
+        allow read, write: if request.auth != null;
+      }
     }
   }
 }

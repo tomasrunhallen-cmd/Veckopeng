@@ -38,7 +38,14 @@ async function run() {
     balance: (k.balance || 0) + (k.weeklyAmount ?? weekly),
   }));
 
-  await ref.update({ kids: newKids, lastPayout: new Date().toISOString() });
+  const now = new Date().toISOString();
+  await ref.update({ kids: newKids, lastPayout: now });
+
+  const txCol = db.collection('families/main/transactions');
+  await Promise.all(data.kids.map((k, i) =>
+    txCol.add({ kidIndex: i, kidName: k.name, delta: k.weeklyAmount ?? weekly,
+                type: 'payout', timestamp: now, undone: false })
+  ));
   console.log('Veckopeng utbetald:', newKids.map(k => `${k.name} ${k.balance} kr`).join(', '));
 }
 
