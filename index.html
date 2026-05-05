@@ -611,7 +611,12 @@
   }
 
   // ── FAMILY RESOLUTION ──
-  async function getFamilyOrOnboard(uid) {
+  // Accounts created before this date existed before multi-family support
+  // and should be auto-migrated to families/main.
+  const MULTI_FAMILY_CUTOFF = new Date('2026-05-05T00:00:00Z');
+
+  async function getFamilyOrOnboard(user) {
+    const uid = user.uid;
     const { db, doc, getDoc, setDoc } = window._fb;
     const userSnap = await getDoc(doc(db, 'users', uid));
     if (userSnap.exists()) {
@@ -620,13 +625,16 @@
       FAMILY_DOC = 'families/' + familyId;
       return 'found';
     }
-    // Backward compat: existing users mapped to families/main
-    const mainSnap = await getDoc(doc(db, 'families/main'));
-    if (mainSnap.exists()) {
-      await setDoc(doc(db, 'users', uid), { familyId: 'main' });
-      FAMILY_ID  = 'main';
-      FAMILY_DOC = 'families/main';
-      return 'found';
+    // Only migrate old accounts — new registrations go to onboarding
+    const createdAt = new Date(user.metadata.creationTime);
+    if (createdAt < MULTI_FAMILY_CUTOFF) {
+      const mainSnap = await getDoc(doc(db, 'families/main'));
+      if (mainSnap.exists()) {
+        await setDoc(doc(db, 'users', uid), { familyId: 'main' });
+        FAMILY_ID  = 'main';
+        FAMILY_DOC = 'families/main';
+        return 'found';
+      }
     }
     return 'onboard';
   }
@@ -1152,7 +1160,7 @@
       if (user) {
         currentUid = user.uid;
         try {
-          const result = await getFamilyOrOnboard(user.uid);
+          const result = await getFamilyOrOnboard(user);
           if (result === 'found') {
             hide('login-screen'); hide('onboard-screen'); show('app-screen');
             await initFamilyData();
