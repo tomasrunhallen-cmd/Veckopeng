@@ -162,6 +162,10 @@
     }
     .kid-card.violet::before { background: #a78bfa; }
     .kid-card.orange::before { background: #fb923c; }
+    .kid-card.green::before  { background: #10b981; }
+    .kid-card.blue::before   { background: #60a5fa; }
+    .kid-card.pink::before   { background: #f472b6; }
+    .kid-card.yellow::before { background: #fbbf24; }
     .kid-avatar { font-size: 38px; line-height: 1; margin-bottom: 2px; }
     .kid-name { font-size: 15px; font-weight: 600; color: var(--sub); letter-spacing: 0.2px; }
     .kid-balance {
@@ -170,6 +174,10 @@
     }
     .kid-card.violet .kid-balance { color: #c4b5fd; }
     .kid-card.orange .kid-balance { color: #fdba74; }
+    .kid-card.green .kid-balance  { color: #6ee7b7; }
+    .kid-card.blue .kid-balance   { color: #93c5fd; }
+    .kid-card.pink .kid-balance   { color: #f9a8d4; }
+    .kid-card.yellow .kid-balance { color: #fde68a; }
     .kid-balance.negative { color: #f87171 !important; }
     .kid-unit { font-size: 14px; font-weight: 500; color: var(--muted); margin-top: -2px; }
     .change-btn {
@@ -180,7 +188,26 @@
     }
     .change-btn:active { transform: scale(0.95); opacity: 0.85; }
     .kid-card.violet .change-btn { background: rgba(167,139,250,0.15); color: #a78bfa; }
-    .kid-card.orange .change-btn { background: rgba(251,146,60,0.15); color: #fb923c; }
+    .kid-card.orange .change-btn { background: rgba(251,146,60,0.15);  color: #fb923c; }
+    .kid-card.green .change-btn  { background: rgba(16,185,129,0.15);  color: #10b981; }
+    .kid-card.blue .change-btn   { background: rgba(96,165,250,0.15);  color: #60a5fa; }
+    .kid-card.pink .change-btn   { background: rgba(244,114,182,0.15); color: #f472b6; }
+    .kid-card.yellow .change-btn { background: rgba(251,191,36,0.15);  color: #fbbf24; }
+
+    .add-kid-btn {
+      width: 100%; padding: 13px; background: transparent;
+      border: 1.5px dashed var(--border); border-radius: 12px;
+      font-size: 14px; font-weight: 600; color: var(--muted);
+      cursor: pointer; font-family: inherit;
+      transition: border-color 0.15s, color 0.15s; -webkit-tap-highlight-color: transparent;
+    }
+    .add-kid-btn:active { border-color: #a78bfa; color: #a78bfa; }
+    .remove-kid-btn {
+      background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2);
+      border-radius: 8px; padding: 6px 10px; font-size: 13px; font-weight: 700;
+      color: #ef4444; cursor: pointer; font-family: inherit; flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
 
     /* SETTINGS */
     .settings-section { margin-top: 20px; }
@@ -588,8 +615,8 @@
   let FAMILY_DOC = 'families/main';
   let currentUid = null;
 
-  const AVATARS = ['🐱', '🦊'];
-  const COLORS  = ['violet', 'orange'];
+  const AVATARS = ['🐱', '🦊', '🐸', '🐼', '🦁', '🐶', '🐻', '🦄'];
+  const COLORS  = ['violet', 'orange', 'green', 'blue', 'pink', 'yellow'];
 
   let unsubSnapshot = null;
   let localData     = null;
@@ -921,6 +948,19 @@
     showSimpleToast('Veckopeng utbetald!');
   };
 
+  window.addKid = async function() {
+    const newKid = { name: 'Nytt barn', balance: 0, weeklyAmount: localData.weeklyAmount ?? 30 };
+    await dbUpdate({ kids: [...localData.kids, newKid] });
+  };
+
+  window.removeKid = async function(idx) {
+    if (!localData || localData.kids.length <= 1) return;
+    const name = localData.kids[idx]?.name || 'Barn';
+    const kids = localData.kids.filter((_, i) => i !== idx);
+    await dbUpdate({ kids });
+    showSimpleToast(escHtml(name) + ' borttaget');
+  };
+
   window.saveSettings = async function() {
     const payDay = parseInt(document.getElementById('s-payday').value, 10);
     const kids = localData.kids.map((k, i) => {
@@ -1011,7 +1051,7 @@
     (data.kids || []).forEach((kid, i) => {
       const bal     = Math.round(kid.balance || 0);
       const card    = document.createElement('div');
-      card.className = 'kid-card ' + (COLORS[i] || 'violet');
+      card.className = 'kid-card ' + (COLORS[i % COLORS.length] || 'violet');
       card.setAttribute('role', 'button');
       card.setAttribute('tabindex', '0');
       card.setAttribute('aria-label', escHtml(kid.name) + ', ' + bal + ' kronor. Tryck för att ändra saldo.');
@@ -1020,7 +1060,7 @@
       const negClass = bal < 0 ? ' negative' : '';
       const display  = bal < 0 ? ('−' + Math.abs(bal)) : String(bal);
       card.innerHTML =
-        '<div class="kid-avatar" aria-hidden="true">' + (AVATARS[i] || '🧒') + '</div>' +
+        '<div class="kid-avatar" aria-hidden="true">' + (AVATARS[i % AVATARS.length] || '🧒') + '</div>' +
         '<div class="kid-name">' + escHtml(kid.name) + '</div>' +
         '<div class="kid-balance' + negClass + '" id="balance-' + i + '" aria-hidden="true">' + display + '</div>' +
         '<div class="kid-unit" aria-hidden="true">kr</div>' +
@@ -1041,19 +1081,27 @@
     }
 
     document.getElementById('s-payday').value = data.payDay ?? 1;
-    document.getElementById('s-kids-list').innerHTML = (data.kids || []).map((kid, i) =>
-      '<div class="settings-row">' +
-        '<div><div class="settings-label">' + (AVATARS[i]||'') + ' ' + escHtml(kid.name) + '</div>' +
-        '<div class="settings-sub">Namn</div></div>' +
-        '<input type="text" id="s-name-' + i + '" class="settings-input" value="' + escHtml(kid.name) + '" ' +
-          'maxlength="20" aria-label="Namn på ' + escHtml(kid.name) + '" /></div>' +
-      '<div class="settings-row">' +
-        '<div><div class="settings-label">Veckopeng</div>' +
-        '<div class="settings-sub">kr per vecka</div></div>' +
-        '<input type="number" id="s-weekly-' + i + '" class="settings-input" min="0" step="5" ' +
-          'value="' + (kid.weeklyAmount ?? data.weeklyAmount ?? 30) + '" ' +
-          'aria-label="Veckopeng för ' + escHtml(kid.name) + ' i kronor" /></div>'
-    ).join('');
+    const canRemove = (data.kids || []).length > 1;
+    document.getElementById('s-kids-list').innerHTML =
+      (data.kids || []).map((kid, i) =>
+        '<div class="settings-row">' +
+          '<div style="flex:1"><div class="settings-label">' + (AVATARS[i % AVATARS.length] || '🧒') + ' ' + escHtml(kid.name) + '</div>' +
+          '<div class="settings-sub">Namn</div></div>' +
+          '<div style="display:flex;align-items:center;gap:8px">' +
+          '<input type="text" id="s-name-' + i + '" class="settings-input" value="' + escHtml(kid.name) + '" ' +
+            'maxlength="20" aria-label="Namn på ' + escHtml(kid.name) + '" />' +
+          (canRemove ? '<button class="remove-kid-btn" onclick="removeKid(' + i + ')" aria-label="Ta bort ' + escHtml(kid.name) + '">✕</button>' : '') +
+          '</div></div>' +
+        '<div class="settings-row">' +
+          '<div><div class="settings-label">Veckopeng</div>' +
+          '<div class="settings-sub">kr per vecka</div></div>' +
+          '<input type="number" id="s-weekly-' + i + '" class="settings-input" min="0" step="5" ' +
+            'value="' + (kid.weeklyAmount ?? data.weeklyAmount ?? 30) + '" ' +
+            'aria-label="Veckopeng för ' + escHtml(kid.name) + ' i kronor" /></div>'
+      ).join('') +
+      '<div style="padding:10px 18px 4px">' +
+        '<button class="add-kid-btn" onclick="addKid()">＋ Lägg till barn</button>' +
+      '</div>';
 
     updateFamilyCodeDisplay();
   }
