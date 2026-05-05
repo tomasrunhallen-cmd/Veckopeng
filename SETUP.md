@@ -35,6 +35,9 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
     match /families/{docId} {
       allow read, write: if request.auth != null;
       match /transactions/{txId} {

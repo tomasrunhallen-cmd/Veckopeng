@@ -92,6 +92,23 @@
     .btn-login:active { transform: scale(0.97); }
     .btn-login:disabled { opacity: 0.5; cursor: not-allowed; }
 
+    /* ONBOARDING */
+    #onboard-screen {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; min-height: 100dvh; padding: 24px; gap: 28px;
+    }
+    .onboard-tabs {
+      display: flex; background: var(--toggle-bg); border-radius: 12px; padding: 4px; width: 100%;
+    }
+    .onboard-tab {
+      flex: 1; padding: 10px; border: none; border-radius: 9px; font-size: 14px; font-weight: 600;
+      cursor: pointer; font-family: inherit; background: transparent; color: var(--muted);
+      transition: background 0.15s, color 0.15s; -webkit-tap-highlight-color: transparent;
+    }
+    .onboard-tab.active { background: var(--card); color: var(--text); }
+    .onboard-panel { display: none; flex-direction: column; gap: 14px; }
+    .onboard-panel.active { display: flex; }
+
     /* APP */
     #app-screen { display: none; }
 
@@ -329,7 +346,6 @@
     .history-amount.undone { color: var(--muted); text-decoration: line-through; }
     .history-empty { padding: 24px; text-align: center; color: var(--muted); font-size: 14px; }
 
-    /* hide spin arrows */
     input[type=number]::-webkit-inner-spin-button,
     input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
   </style>
@@ -351,15 +367,51 @@
   </div>
   <div class="login-card">
     <div class="input-group">
-      <label>E-postadress</label>
+      <label for="login-email">E-postadress</label>
       <input type="email" id="login-email" placeholder="din@email.se" autocomplete="email" />
     </div>
     <div class="input-group">
-      <label>Lösenord</label>
+      <label for="login-password">Lösenord</label>
       <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" />
     </div>
-    <div class="error-msg" id="login-error"></div>
+    <div class="error-msg" id="login-error" role="alert"></div>
     <button class="btn-login" id="login-btn" onclick="doLogin()">Logga in</button>
+  </div>
+</div>
+
+<!-- ONBOARDING -->
+<div id="onboard-screen" style="display:none">
+  <div class="login-logo">🐷</div>
+  <div class="login-title">
+    <h1>Spargris</h1>
+    <p>Skapa en familj eller gå med i en befintlig</p>
+  </div>
+  <div class="login-card">
+    <div class="onboard-tabs" role="tablist">
+      <button class="onboard-tab active" id="tab-create" role="tab" aria-selected="true"
+              aria-controls="panel-create" onclick="switchTab('create')">Skapa familj</button>
+      <button class="onboard-tab" id="tab-join" role="tab" aria-selected="false"
+              aria-controls="panel-join" onclick="switchTab('join')">Gå med</button>
+    </div>
+    <div id="panel-create" class="onboard-panel active" role="tabpanel" aria-labelledby="tab-create">
+      <p style="font-size:14px;color:var(--muted);text-align:center">
+        Skapa en ny familj och dela koden med din partner.
+      </p>
+      <div class="error-msg" id="create-error" role="alert"></div>
+      <button class="btn-login" id="create-btn" onclick="createFamily()">Skapa familj</button>
+    </div>
+    <div id="panel-join" class="onboard-panel" role="tabpanel" aria-labelledby="tab-join">
+      <p style="font-size:14px;color:var(--muted);text-align:center">
+        Ange den 6-siffriga familjekoden från din partner.
+      </p>
+      <div class="input-group">
+        <label for="join-code">Familjakod</label>
+        <input type="text" id="join-code" placeholder="ABC123" maxlength="6" autocomplete="off"
+               style="text-transform:uppercase;letter-spacing:0.2em;font-weight:700;font-size:22px;text-align:center" />
+      </div>
+      <div class="error-msg" id="join-error" role="alert"></div>
+      <button class="btn-login" id="join-btn" onclick="joinFamily()">Gå med</button>
+    </div>
   </div>
 </div>
 
@@ -367,19 +419,19 @@
 <div id="app-screen">
   <div class="app-header">
     <div class="header-left">
-      <span class="header-logo">🐷</span>
+      <span class="header-logo" aria-hidden="true">🐷</span>
       <span class="header-title">Spargris</span>
     </div>
     <div class="header-right">
-      <button class="icon-btn" id="theme-btn" onclick="toggleTheme()">☀️</button>
-      <button class="icon-btn" onclick="toggleHistory()">📋</button>
-      <button class="icon-btn" onclick="toggleSettings()">⚙️</button>
-      <button class="icon-btn" onclick="doLogout()">🚪</button>
+      <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" aria-label="Byt tema">☀️</button>
+      <button class="icon-btn" onclick="toggleHistory()" aria-label="Transaktionshistorik">📋</button>
+      <button class="icon-btn" onclick="toggleSettings()" aria-label="Inställningar">⚙️</button>
+      <button class="icon-btn" onclick="doLogout()" aria-label="Logga ut">🚪</button>
     </div>
   </div>
 
   <div class="main-content">
-    <div class="payout-strip" id="payout-info">Laddar…</div>
+    <div class="payout-strip" id="payout-info" aria-live="polite">Laddar…</div>
     <div class="cards-grid" id="kids-grid"></div>
 
     <div class="history-section settings-section" id="history-section" style="display:none">
@@ -393,9 +445,17 @@
       <div class="settings-section-label">Inställningar</div>
       <div class="settings-card">
         <div id="s-kids-list"></div>
+        <div class="settings-row" id="s-family-code-row" style="display:none">
+          <div>
+            <div class="settings-label">Familjakod</div>
+            <div class="settings-sub">Dela med din partner</div>
+          </div>
+          <div id="s-family-code"
+               style="font-weight:800;font-size:18px;letter-spacing:0.15em;color:#a78bfa"></div>
+        </div>
         <div class="settings-row">
           <div><div class="settings-label">Utbetalningsdag</div></div>
-          <select id="s-payday" class="settings-select">
+          <select id="s-payday" class="settings-select" aria-label="Välj utbetalningsdag">
             <option value="1">Måndag</option>
             <option value="2">Tisdag</option>
             <option value="3">Onsdag</option>
@@ -416,18 +476,20 @@
 <div class="overlay" id="overlay" onclick="closeSheet()"></div>
 
 <!-- BOTTOM SHEET -->
-<div class="bottom-sheet" id="sheet">
-  <div class="sheet-handle"></div>
+<div class="bottom-sheet" id="sheet"
+     role="dialog" aria-modal="true" aria-labelledby="sheet-title" aria-hidden="true">
+  <div class="sheet-handle" aria-hidden="true"></div>
   <div class="sheet-title" id="sheet-title">Ändra saldo – <span>–</span></div>
-  <div class="chips">
-    <div class="chip" onclick="setChip(5,this)">5</div>
-    <div class="chip" onclick="setChip(10,this)">10</div>
-    <div class="chip" onclick="setChip(20,this)">20</div>
-    <div class="chip" onclick="setChip(50,this)">50</div>
+  <div class="chips" role="group" aria-label="Snabbbelopp">
+    <button type="button" class="chip" onclick="setChip(5,this)">5</button>
+    <button type="button" class="chip" onclick="setChip(10,this)">10</button>
+    <button type="button" class="chip" onclick="setChip(20,this)">20</button>
+    <button type="button" class="chip" onclick="setChip(50,this)">50</button>
   </div>
   <div class="amount-input-wrap">
-    <input class="amount-input" id="amount-input" type="number" value="" placeholder="0" min="0" inputmode="decimal" />
-    <span class="amount-unit">kr</span>
+    <input class="amount-input" id="amount-input" type="number" value="" placeholder="0"
+           min="0" inputmode="decimal" aria-label="Belopp i kronor" />
+    <span class="amount-unit" aria-hidden="true">kr</span>
   </div>
   <div class="sheet-actions">
     <button class="sheet-btn add" onclick="doAdjust(1)">＋ Lägg till</button>
@@ -436,10 +498,10 @@
 </div>
 
 <!-- TOAST -->
-<div class="toast" id="toast">
+<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true">
   <span class="toast-text" id="toast-text"></span>
-  <button class="toast-undo" onclick="doUndo()">Ångra</button>
-  <div class="toast-progress"></div>
+  <button class="toast-undo" onclick="doUndo()" aria-label="Ångra senaste ändring">Ångra</button>
+  <div class="toast-progress" aria-hidden="true"></div>
 </div>
 
 <script type="module">
@@ -494,9 +556,13 @@
                    query, orderBy, limit, getDocs };
   }
 
-  const FAMILY_DOC = 'families/main';
-  const AVATARS    = ['🐱', '🦊'];
-  const COLORS     = ['violet', 'orange'];
+  // ── FAMILY STATE ──
+  let FAMILY_ID  = null;
+  let FAMILY_DOC = 'families/main';
+  let currentUid = null;
+
+  const AVATARS = ['🐱', '🦊'];
+  const COLORS  = ['violet', 'orange'];
 
   let unsubSnapshot = null;
   let localData     = null;
@@ -507,11 +573,109 @@
   let txUndone      = false;
   let toastTimer    = null;
   let pendingPop    = -1;
+  let lastFocused   = null;
+
+  // ── CODE GENERATION ──
+  function generateCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = '';
+    for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    return code;
+  }
+
+  // ── FAMILY RESOLUTION ──
+  async function getFamilyOrOnboard(uid) {
+    const { db, doc, getDoc, setDoc } = window._fb;
+    const userSnap = await getDoc(doc(db, 'users', uid));
+    if (userSnap.exists()) {
+      const { familyId } = userSnap.data();
+      FAMILY_ID  = familyId;
+      FAMILY_DOC = 'families/' + familyId;
+      return 'found';
+    }
+    // Backward compat: existing users mapped to families/main
+    const mainSnap = await getDoc(doc(db, 'families/main'));
+    if (mainSnap.exists()) {
+      await setDoc(doc(db, 'users', uid), { familyId: 'main' });
+      FAMILY_ID  = 'main';
+      FAMILY_DOC = 'families/main';
+      return 'found';
+    }
+    return 'onboard';
+  }
+
+  // ── ONBOARDING ──
+  window.switchTab = function(tab) {
+    ['create','join'].forEach(t => {
+      document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+      document.getElementById('tab-' + t).setAttribute('aria-selected', t === tab);
+      document.getElementById('panel-' + t).classList.toggle('active', t === tab);
+    });
+  };
+
+  window.createFamily = async function() {
+    const btn = document.getElementById('create-btn');
+    const err = document.getElementById('create-error');
+    err.style.display = 'none';
+    btn.disabled = true; btn.textContent = 'Skapar…';
+    try {
+      const { db, doc, setDoc } = window._fb;
+      const code = generateCode();
+      await setDoc(doc(db, 'families', code), {
+        weeklyAmount: 30, payDay: 1, lastPayout: null,
+        kids: [
+          { name: 'Barn 1', balance: 0, weeklyAmount: 30 },
+          { name: 'Barn 2', balance: 0, weeklyAmount: 30 }
+        ]
+      });
+      await setDoc(doc(db, 'users', currentUid), { familyId: code });
+      FAMILY_ID  = code;
+      FAMILY_DOC = 'families/' + code;
+      hide('onboard-screen');
+      show('app-screen');
+      await initFamilyData();
+    } catch(e) {
+      err.textContent = 'Kunde inte skapa familj. Försök igen.';
+      err.style.display = 'block';
+      btn.disabled = false; btn.textContent = 'Skapa familj';
+    }
+  };
+
+  window.joinFamily = async function() {
+    const codeInput = document.getElementById('join-code');
+    const btn       = document.getElementById('join-btn');
+    const err       = document.getElementById('join-error');
+    const code      = codeInput.value.trim().toUpperCase();
+    err.style.display = 'none';
+    if (code.length !== 6) {
+      err.textContent = 'Koden måste vara 6 tecken';
+      err.style.display = 'block'; return;
+    }
+    btn.disabled = true; btn.textContent = 'Söker…';
+    try {
+      const { db, doc, getDoc, setDoc } = window._fb;
+      const famSnap = await getDoc(doc(db, 'families', code));
+      if (!famSnap.exists()) {
+        err.textContent = 'Familjakod hittades inte';
+        err.style.display = 'block';
+        btn.disabled = false; btn.textContent = 'Gå med'; return;
+      }
+      await setDoc(doc(db, 'users', currentUid), { familyId: code });
+      FAMILY_ID  = code;
+      FAMILY_DOC = 'families/' + code;
+      hide('onboard-screen');
+      show('app-screen');
+      await initFamilyData();
+    } catch(e) {
+      err.textContent = 'Något gick fel. Försök igen.';
+      err.style.display = 'block';
+      btn.disabled = false; btn.textContent = 'Gå med';
+    }
+  };
 
   // ── THEME ──
   function initTheme() {
-    const saved = localStorage.getItem('vp-theme') || 'dark';
-    applyTheme(saved);
+    applyTheme(localStorage.getItem('vp-theme') || 'dark');
   }
   function applyTheme(t) {
     document.documentElement.setAttribute('data-theme', t);
@@ -540,8 +704,8 @@
 
   // ── DEMO HISTORY ──
   const demoHistory = [
-    { kidIndex: 0, kidName: 'Rut',  delta: 30, type: 'payout', timestamp: new Date(Date.now()-7*86400000).toISOString(), undone: false },
-    { kidIndex: 1, kidName: 'Tage', delta: 25, type: 'payout', timestamp: new Date(Date.now()-7*86400000).toISOString(), undone: false },
+    { kidIndex: 0, kidName: 'Rut',  delta: 30,  type: 'payout', timestamp: new Date(Date.now()-7*86400000).toISOString(), undone: false },
+    { kidIndex: 1, kidName: 'Tage', delta: 25,  type: 'payout', timestamp: new Date(Date.now()-7*86400000).toISOString(), undone: false },
     { kidIndex: 0, kidName: 'Rut',  delta: -50, type: 'manual', timestamp: new Date(Date.now()-3*86400000).toISOString(), undone: false },
     { kidIndex: 1, kidName: 'Tage', delta: 20,  type: 'manual', timestamp: new Date(Date.now()-1*86400000).toISOString(), undone: true  },
   ];
@@ -565,7 +729,8 @@
       const snap = await getDocs(q);
       renderHistory(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     } catch(e) {
-      document.getElementById('history-list').innerHTML = '<div class="history-empty">Kunde inte hämta historik – kontrollera Firestore-reglerna.</div>';
+      document.getElementById('history-list').innerHTML =
+        '<div class="history-empty">Kunde inte hämta historik – kontrollera Firestore-reglerna.</div>';
     }
   }
 
@@ -573,19 +738,19 @@
     const el = document.getElementById('history-list');
     if (!txs.length) { el.innerHTML = '<div class="history-empty">Inga transaktioner än</div>'; return; }
     el.innerHTML = txs.map(tx => {
-      const pos  = tx.delta > 0;
-      const abs  = Math.abs(Math.round(tx.delta));
-      const sign = pos ? '+' : '−';
+      const pos      = tx.delta > 0;
+      const abs      = Math.abs(Math.round(tx.delta));
+      const sign     = pos ? '+' : '−';
       const amtClass = tx.undone ? 'undone' : pos ? 'pos' : 'neg';
       const avatar   = AVATARS[tx.kidIndex] || '🧒';
       const name     = escHtml(tx.kidName || ('Barn ' + (tx.kidIndex + 1)));
       const typeStr  = tx.type === 'payout' ? 'veckopeng' : tx.undone ? 'ångrad' : 'manuell';
       const date     = new Date(tx.timestamp).toLocaleDateString('sv-SE', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
       return '<div class="history-item' + (tx.undone ? ' undone' : '') + '">' +
-        '<div class="history-avatar">' + avatar + '</div>' +
+        '<div class="history-avatar" aria-hidden="true">' + avatar + '</div>' +
         '<div class="history-info"><div class="history-name">' + name + '</div>' +
         '<div class="history-meta">' + date + ' · ' + typeStr + '</div></div>' +
-        '<div class="history-amount ' + amtClass + '">' + sign + abs + ' kr</div>' +
+        '<div class="history-amount ' + amtClass + '" aria-label="' + sign + abs + ' kronor">' + sign + abs + ' kr</div>' +
         '</div>';
     }).join('');
   }
@@ -619,6 +784,7 @@
 
   // ── SHEET ──
   window.openSheet = function(kidIdx) {
+    lastFocused = document.activeElement;
     activeKid = kidIdx;
     const title = document.getElementById('sheet-title');
     title.className = 'sheet-title' + (kidIdx === 1 ? ' orange' : '');
@@ -628,12 +794,17 @@
     const inp = document.getElementById('amount-input');
     inp.value = '';
     document.getElementById('overlay').classList.add('show');
-    document.getElementById('sheet').classList.add('open');
+    const sheet = document.getElementById('sheet');
+    sheet.classList.add('open');
+    sheet.setAttribute('aria-hidden', 'false');
     setTimeout(() => inp.focus(), 350);
   };
   window.closeSheet = function() {
     document.getElementById('overlay').classList.remove('show');
-    document.getElementById('sheet').classList.remove('open');
+    const sheet = document.getElementById('sheet');
+    sheet.classList.remove('open');
+    sheet.setAttribute('aria-hidden', 'true');
+    if (lastFocused) { lastFocused.focus(); lastFocused = null; }
   };
   window.setChip = function(val, el) {
     document.getElementById('amount-input').value = val;
@@ -690,6 +861,7 @@
     s.style.display = opening ? 'block' : 'none';
     if (opening) setTimeout(() => s.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
   };
+
   window.forcePayoutNow = async function() {
     if (!localData) return;
     const weekly  = localData.weeklyAmount ?? 30;
@@ -697,7 +869,20 @@
       ...k, balance: (k.balance || 0) + (k.weeklyAmount ?? weekly)
     }));
     pendingPop = 0;
-    await dbUpdate({ kids: newKids, lastPayout: new Date().toISOString() });
+    const now = new Date().toISOString();
+    await dbUpdate({ kids: newKids, lastPayout: now });
+    if (!IS_DEMO) {
+      try {
+        const { db, collection, addDoc } = window._fb;
+        await Promise.all(localData.kids.map((k, i) =>
+          addDoc(collection(db, FAMILY_DOC + '/transactions'), {
+            kidIndex: i, kidName: k.name,
+            delta: k.weeklyAmount ?? weekly,
+            type: 'payout', timestamp: now, undone: false
+          })
+        ));
+      } catch(e) {}
+    }
     showSimpleToast('Veckopeng utbetald!');
   };
 
@@ -720,24 +905,32 @@
   }
   function dbListen(cb) {
     if (IS_DEMO) { return mockDb.onSnapshot(null, cb); }
-    else { const { db, doc, onSnapshot } = window._fb; return onSnapshot(doc(db, FAMILY_DOC), snap => cb(snap.data())); }
+    const { db, doc, onSnapshot } = window._fb;
+    return onSnapshot(
+      doc(db, FAMILY_DOC),
+      snap => { if (snap.exists()) cb(snap.data()); },
+      err  => console.error('Firestore snapshot error:', err)
+    );
   }
   async function dbEnsureDoc() {
     if (IS_DEMO) return;
     const { db, doc, getDoc, setDoc } = window._fb;
-    const ref = doc(db, FAMILY_DOC);
+    const ref  = doc(db, FAMILY_DOC);
     const snap = await getDoc(ref);
     if (!snap.exists()) {
       await setDoc(ref, {
         weeklyAmount: 30, payDay: 1, lastPayout: null,
-        kids: [{ name: 'Rut', balance: 0, weeklyAmount: 30 }, { name: 'Tage', balance: 0, weeklyAmount: 25 }]
+        kids: [
+          { name: 'Barn 1', balance: 0, weeklyAmount: 30 },
+          { name: 'Barn 2', balance: 0, weeklyAmount: 30 }
+        ]
       });
     }
   }
 
   // ── PAYOUT ──
   async function checkPayout(data) {
-    const today = new Date(); today.setHours(0,0,0,0);
+    const today  = new Date(); today.setHours(0,0,0,0);
     const payDay = data.payDay ?? 1;
     const weekly = data.weeklyAmount ?? 30;
     const lastPay = data.lastPayout ? new Date(data.lastPayout) : null;
@@ -756,8 +949,7 @@
           addDoc(collection(db, FAMILY_DOC + '/transactions'), {
             kidIndex: i, kidName: k.name,
             delta: (k.weeklyAmount ?? weekly) * missed,
-            type: 'payout',
-            timestamp: lastDue.toISOString(), undone: false
+            type: 'payout', timestamp: lastDue.toISOString(), undone: false
           })
         ));
       } catch(e) {}
@@ -769,36 +961,39 @@
   function renderApp(data) {
     localData = data;
 
-    // Payout strip
-    const payDay = data.payDay ?? 1;
+    const payDay   = data.payDay ?? 1;
     const todayMid = new Date(); todayMid.setHours(0,0,0,0);
     const lastDue  = lastOccurrence(todayMid, payDay);
     const next     = new Date(lastDue);
     if (next.getTime() < todayMid.getTime()) next.setDate(next.getDate() + 7);
-    const diff     = Math.round((next - todayMid) / (24*60*60*1000));
-    const label    = diff === 0 ? 'idag' : diff === 1 ? 'imorgon' : 'om ' + diff + ' dagar';
-    document.getElementById('payout-info').textContent = 'Nästa utbetalning ' + getDayName(payDay) + ' – ' + label;
+    const diff  = Math.round((next - todayMid) / (24*60*60*1000));
+    const label = diff === 0 ? 'idag' : diff === 1 ? 'imorgon' : 'om ' + diff + ' dagar';
+    document.getElementById('payout-info').textContent =
+      'Nästa utbetalning ' + getDayName(payDay) + ' – ' + label;
 
-    // Cards
     const grid = document.getElementById('kids-grid');
     grid.innerHTML = '';
     (data.kids || []).forEach((kid, i) => {
-      const bal  = Math.round(kid.balance || 0);
-      const card = document.createElement('div');
+      const bal     = Math.round(kid.balance || 0);
+      const card    = document.createElement('div');
       card.className = 'kid-card ' + (COLORS[i] || 'violet');
+      card.setAttribute('role', 'button');
+      card.setAttribute('tabindex', '0');
+      card.setAttribute('aria-label', escHtml(kid.name) + ', ' + bal + ' kronor. Tryck för att ändra saldo.');
       card.onclick = () => window.openSheet(i);
+      card.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); window.openSheet(i); } };
       const negClass = bal < 0 ? ' negative' : '';
       const display  = bal < 0 ? ('−' + Math.abs(bal)) : String(bal);
       card.innerHTML =
-        '<div class="kid-avatar">' + (AVATARS[i] || '🧒') + '</div>' +
+        '<div class="kid-avatar" aria-hidden="true">' + (AVATARS[i] || '🧒') + '</div>' +
         '<div class="kid-name">' + escHtml(kid.name) + '</div>' +
-        '<div class="kid-balance' + negClass + '" id="balance-' + i + '">' + display + '</div>' +
-        '<div class="kid-unit">kr</div>' +
-        '<button class="change-btn" onclick="openSheet(' + i + ');event.stopPropagation()">Ändra saldo</button>';
+        '<div class="kid-balance' + negClass + '" id="balance-' + i + '" aria-hidden="true">' + display + '</div>' +
+        '<div class="kid-unit" aria-hidden="true">kr</div>' +
+        '<button class="change-btn" onclick="openSheet(' + i + ');event.stopPropagation()" ' +
+          'aria-label="Ändra saldo för ' + escHtml(kid.name) + '">Ändra saldo</button>';
       grid.appendChild(card);
     });
 
-    // Balance pop
     if (pendingPop >= 0) {
       const idx = pendingPop; pendingPop = -1;
       requestAnimationFrame(() => {
@@ -810,20 +1005,33 @@
       });
     }
 
-    // Settings inputs
     document.getElementById('s-payday').value = data.payDay ?? 1;
     document.getElementById('s-kids-list').innerHTML = (data.kids || []).map((kid, i) =>
       '<div class="settings-row">' +
         '<div><div class="settings-label">' + (AVATARS[i]||'') + ' ' + escHtml(kid.name) + '</div>' +
         '<div class="settings-sub">Namn</div></div>' +
-        '<input type="text" id="s-name-' + i + '" class="settings-input" value="' + escHtml(kid.name) + '" maxlength="20" />' +
-      '</div>' +
+        '<input type="text" id="s-name-' + i + '" class="settings-input" value="' + escHtml(kid.name) + '" ' +
+          'maxlength="20" aria-label="Namn på ' + escHtml(kid.name) + '" /></div>' +
       '<div class="settings-row">' +
         '<div><div class="settings-label">Veckopeng</div>' +
         '<div class="settings-sub">kr per vecka</div></div>' +
-        '<input type="number" id="s-weekly-' + i + '" class="settings-input" min="0" step="5" value="' + (kid.weeklyAmount ?? data.weeklyAmount ?? 30) + '" />' +
-      '</div>'
+        '<input type="number" id="s-weekly-' + i + '" class="settings-input" min="0" step="5" ' +
+          'value="' + (kid.weeklyAmount ?? data.weeklyAmount ?? 30) + '" ' +
+          'aria-label="Veckopeng för ' + escHtml(kid.name) + ' i kronor" /></div>'
     ).join('');
+
+    updateFamilyCodeDisplay();
+  }
+
+  function updateFamilyCodeDisplay() {
+    const row = document.getElementById('s-family-code-row');
+    const el  = document.getElementById('s-family-code');
+    if (FAMILY_ID && FAMILY_ID !== 'main') {
+      row.style.display = 'flex';
+      el.textContent    = FAMILY_ID;
+    } else {
+      row.style.display = 'none';
+    }
   }
 
   // ── AUTH ──
@@ -834,7 +1042,7 @@
     const err   = document.getElementById('login-error');
     err.style.display = 'none'; btn.disabled = true; btn.textContent = 'Loggar in…';
     if (IS_DEMO) {
-      if (email && pw) { hide('login-screen'); show('app-screen'); await initFamily(); }
+      if (email && pw) { hide('login-screen'); show('app-screen'); await initFamilyData(); }
       else { err.textContent = 'Fyll i e-post och lösenord'; err.style.display = 'block'; }
       btn.disabled = false; btn.textContent = 'Logga in'; return;
     }
@@ -848,11 +1056,15 @@
   };
   window.doLogout = async function() {
     if (unsubSnapshot) { unsubSnapshot(); unsubSnapshot = null; }
+    FAMILY_ID = null; FAMILY_DOC = 'families/main'; currentUid = null;
     if (IS_DEMO) { mockAuth.signOut(); }
     else { const { auth, signOut } = window._fb; await signOut(auth); }
   };
   document.getElementById('login-password').addEventListener('keydown', e => {
     if (e.key === 'Enter') window.doLogin();
+  });
+  document.getElementById('join-code').addEventListener('keydown', e => {
+    if (e.key === 'Enter') window.joinFamily();
   });
 
   // ── SWIPE DOWN TO CLOSE ──
@@ -861,7 +1073,7 @@
   document.getElementById('sheet').addEventListener('touchend',   e => { if (e.changedTouches[0].clientY - touchStartY > 60) closeSheet(); }, { passive: true });
 
   // ── BOOTSTRAP ──
-  async function initFamily() {
+  async function initFamilyData() {
     await dbEnsureDoc();
     unsubSnapshot = dbListen(async data => { renderApp(data); await checkPayout(data); });
   }
@@ -875,8 +1087,25 @@
     const { auth, onAuthStateChanged } = window._fb;
     onAuthStateChanged(auth, async user => {
       hide('loading-overlay');
-      if (user) { show('app-screen'); hide('login-screen'); await initFamily(); }
-      else { hide('app-screen'); show('login-screen', 'flex'); if (unsubSnapshot) { unsubSnapshot(); unsubSnapshot = null; } }
+      if (user) {
+        currentUid = user.uid;
+        try {
+          const result = await getFamilyOrOnboard(user.uid);
+          if (result === 'found') {
+            hide('login-screen'); hide('onboard-screen'); show('app-screen');
+            await initFamilyData();
+          } else {
+            hide('login-screen'); hide('app-screen'); show('onboard-screen', 'flex');
+          }
+        } catch(e) {
+          console.error('Family resolution error:', e);
+          hide('login-screen'); hide('app-screen'); show('onboard-screen', 'flex');
+        }
+      } else {
+        currentUid = null; FAMILY_ID = null; FAMILY_DOC = 'families/main';
+        hide('app-screen'); hide('onboard-screen'); show('login-screen', 'flex');
+        if (unsubSnapshot) { unsubSnapshot(); unsubSnapshot = null; }
+      }
     });
   }
 </script>
