@@ -431,7 +431,7 @@
         Ange den 6-siffriga familjekoden från din partner.
       </p>
       <div class="input-group">
-        <label for="join-code">Familjakod</label>
+        <label for="join-code">Familjekod</label>
         <input type="text" id="join-code" placeholder="ABC123" maxlength="6" autocomplete="off"
                style="text-transform:uppercase;letter-spacing:0.2em;font-weight:700;font-size:22px;text-align:center" />
       </div>
@@ -473,7 +473,7 @@
         <div id="s-kids-list"></div>
         <div class="settings-row" id="s-family-code-row" style="display:none">
           <div>
-            <div class="settings-label">Familjakod</div>
+            <div class="settings-label">Familjekod</div>
             <div class="settings-sub">Dela med din partner</div>
           </div>
           <div id="s-family-code"
@@ -691,7 +691,7 @@
       const { db, doc, getDoc, setDoc } = window._fb;
       const famSnap = await getDoc(doc(db, 'families', code));
       if (!famSnap.exists()) {
-        err.textContent = 'Familjakod hittades inte';
+        err.textContent = 'Familjekod hittades inte';
         err.style.display = 'block';
         btn.disabled = false; btn.textContent = 'Gå med'; return;
       }
