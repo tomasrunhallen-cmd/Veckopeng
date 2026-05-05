@@ -194,6 +194,28 @@
     .kid-card.pink .change-btn   { background: rgba(244,114,182,0.15); color: #f472b6; }
     .kid-card.yellow .change-btn { background: rgba(251,191,36,0.15);  color: #fbbf24; }
 
+    .goal-bar-wrap {
+      width: 100%; height: 6px; border-radius: 3px;
+      background: rgba(255,255,255,0.1); margin: 8px 0 2px; overflow: hidden;
+    }
+    .goal-bar-fill {
+      height: 100%; border-radius: 3px; transition: width 0.5s ease;
+    }
+    .kid-card.violet .goal-bar-fill { background: #a78bfa; }
+    .kid-card.orange .goal-bar-fill { background: #fb923c; }
+    .kid-card.green  .goal-bar-fill { background: #10b981; }
+    .kid-card.blue   .goal-bar-fill { background: #60a5fa; }
+    .kid-card.pink   .goal-bar-fill { background: #f472b6; }
+    .kid-card.yellow .goal-bar-fill { background: #fbbf24; }
+    .goal-label {
+      font-size: 11px; color: var(--muted); text-align: center;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+    }
+    .goal-reached {
+      font-size: 13px; font-weight: 700; color: #fbbf24;
+      margin: 6px 0 2px; text-align: center;
+    }
+
     .avatar-pick-btn {
       font-size: 26px; background: none; border: 2px solid transparent;
       border-radius: 10px; cursor: pointer; padding: 2px 4px; line-height: 1;
@@ -1021,10 +1043,15 @@
   window.saveSettings = async function() {
     const payDay = parseInt(document.getElementById('s-payday').value, 10);
     const kids = localData.kids.map((k, i) => {
-      const name   = document.getElementById('s-name-' + i)?.value.trim() || k.name;
-      const weekly = parseFloat(document.getElementById('s-weekly-' + i)?.value);
-      const avatar = document.getElementById('s-avatar-' + i)?.value || k.avatar || AVATARS[i % AVATARS.length];
-      return { ...k, name, avatar, weeklyAmount: isNaN(weekly) || weekly < 0 ? (k.weeklyAmount ?? 30) : weekly };
+      const name       = document.getElementById('s-name-' + i)?.value.trim() || k.name;
+      const weekly     = parseFloat(document.getElementById('s-weekly-' + i)?.value);
+      const avatar     = document.getElementById('s-avatar-' + i)?.value || k.avatar || AVATARS[i % AVATARS.length];
+      const goalName   = document.getElementById('s-goal-name-' + i)?.value.trim() || '';
+      const goalAmount = parseFloat(document.getElementById('s-goal-amount-' + i)?.value);
+      const goal       = goalName && !isNaN(goalAmount) && goalAmount > 0
+        ? { name: goalName, amount: goalAmount }
+        : null;
+      return { ...k, name, avatar, weeklyAmount: isNaN(weekly) || weekly < 0 ? (k.weeklyAmount ?? 30) : weekly, goal };
     });
     await dbUpdate({ kids, payDay });
     showSimpleToast('Inställningar sparade');
@@ -1117,11 +1144,24 @@
       card.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); window.openSheet(i); } };
       const negClass = bal < 0 ? ' negative' : '';
       const display  = bal < 0 ? ('−' + Math.abs(bal)) : String(bal);
+      let goalHtml = '';
+      if (kid.goal && kid.goal.amount > 0) {
+        const pct = Math.min(100, Math.round(Math.max(0, bal) / kid.goal.amount * 100));
+        if (pct >= 100) {
+          goalHtml = '<div class="goal-reached">🎉 Mål uppnått!</div>';
+        } else {
+          const left = kid.goal.amount - Math.max(0, bal);
+          goalHtml =
+            '<div class="goal-bar-wrap"><div class="goal-bar-fill" style="width:' + pct + '%"></div></div>' +
+            '<div class="goal-label">' + left + ' kr kvar till ' + escHtml(kid.goal.name || 'målet') + '</div>';
+        }
+      }
       card.innerHTML =
         '<div class="kid-avatar" aria-hidden="true">' + (kid.avatar || AVATARS[i % AVATARS.length] || '🧒') + '</div>' +
         '<div class="kid-name">' + escHtml(kid.name) + '</div>' +
         '<div class="kid-balance' + negClass + '" id="balance-' + i + '" aria-hidden="true">' + display + '</div>' +
         '<div class="kid-unit" aria-hidden="true">kr</div>' +
+        goalHtml +
         '<button class="change-btn" onclick="openSheet(' + i + ');event.stopPropagation()" ' +
           'aria-label="Ändra saldo för ' + escHtml(kid.name) + '">Ändra saldo</button>';
       grid.appendChild(card);
@@ -1166,7 +1206,20 @@
             '<div class="settings-sub">kr per vecka</div></div>' +
             '<input type="number" id="s-weekly-' + i + '" class="settings-input" min="0" step="5" ' +
               'value="' + (kid.weeklyAmount ?? data.weeklyAmount ?? 30) + '" ' +
-              'aria-label="Veckopeng för ' + escHtml(kid.name) + ' i kronor" /></div>';
+              'aria-label="Veckopeng för ' + escHtml(kid.name) + ' i kronor" /></div>' +
+          '<div class="settings-row">' +
+            '<div><div class="settings-label">Sparmål</div>' +
+            '<div class="settings-sub">valfritt</div></div>' +
+            '<div style="display:flex;gap:6px">' +
+              '<input type="text" id="s-goal-name-' + i + '" class="settings-input" ' +
+                'value="' + escHtml((kid.goal && kid.goal.name) || '') + '" ' +
+                'placeholder="t.ex. Lego" maxlength="30" style="width:90px" ' +
+                'aria-label="Sparmål namn för ' + escHtml(kid.name) + '" />' +
+              '<input type="number" id="s-goal-amount-' + i + '" class="settings-input" ' +
+                'value="' + ((kid.goal && kid.goal.amount) || '') + '" ' +
+                'placeholder="kr" min="1" step="10" style="width:60px" ' +
+                'aria-label="Sparmål belopp för ' + escHtml(kid.name) + '" />' +
+            '</div></div>';
       }).join('') +
       '<div style="padding:10px 18px 4px">' +
         '<button class="add-kid-btn" onclick="addKid()">＋ Lägg till barn</button>' +
