@@ -194,6 +194,24 @@
     .kid-card.pink .change-btn   { background: rgba(244,114,182,0.15); color: #f472b6; }
     .kid-card.yellow .change-btn { background: rgba(251,191,36,0.15);  color: #fbbf24; }
 
+    .avatar-pick-btn {
+      font-size: 26px; background: none; border: 2px solid transparent;
+      border-radius: 10px; cursor: pointer; padding: 2px 4px; line-height: 1;
+      transition: border-color 0.15s; -webkit-tap-highlight-color: transparent;
+    }
+    .avatar-pick-btn:active { border-color: #a78bfa; }
+    .emoji-grid {
+      display: flex; flex-wrap: wrap; gap: 4px;
+      padding: 12px 18px; border-bottom: 1px solid var(--border);
+      background: var(--input-bg);
+    }
+    .emoji-option {
+      font-size: 24px; padding: 5px; background: none; border: 2px solid transparent;
+      border-radius: 8px; cursor: pointer; font-family: inherit; line-height: 1;
+      transition: border-color 0.1s; -webkit-tap-highlight-color: transparent;
+    }
+    .emoji-option.selected { border-color: #a78bfa; background: rgba(167,139,250,0.15); }
+
     .add-kid-btn {
       width: 100%; padding: 13px; background: transparent;
       border: 1.5px dashed var(--border); border-radius: 12px;
@@ -617,6 +635,11 @@
 
   const AVATARS = ['🐱', '🦊', '🐸', '🐼', '🦁', '🐶', '🐻', '🦄'];
   const COLORS  = ['violet', 'orange', 'green', 'blue', 'pink', 'yellow'];
+  const EMOJI_OPTIONS = [
+    '🐱','🦊','🐸','🐼','🦁','🐶','🐻','🦄','🐯','🐨','🐮','🐷',
+    '🐙','🦋','🐝','🦀','🐬','🦜','🐧','🦩','🐣','🦖','🐲','🌟',
+    '⭐','❤️','🎮','🎨','🏆','🚀','🌈','🎵'
+  ];
 
   let unsubSnapshot = null;
   let localData     = null;
@@ -948,6 +971,21 @@
     showSimpleToast('Veckopeng utbetald!');
   };
 
+  window.toggleAvatarPicker = function(idx) {
+    const picker = document.getElementById('s-avatar-picker-' + idx);
+    picker.style.display = picker.style.display === 'none' ? 'flex' : 'none';
+  };
+
+  window.pickAvatar = function(idx, el) {
+    const emoji = el.dataset.emoji;
+    document.getElementById('s-avatar-' + idx).value = emoji;
+    document.getElementById('s-avatar-btn-' + idx).textContent = emoji;
+    document.querySelectorAll('#s-avatar-picker-' + idx + ' .emoji-option').forEach(b => {
+      b.classList.toggle('selected', b.dataset.emoji === emoji);
+    });
+    document.getElementById('s-avatar-picker-' + idx).style.display = 'none';
+  };
+
   window.confirmRemoveKid = function(idx, el) {
     if (el.dataset.confirm) {
       window.removeKid(idx);
@@ -985,7 +1023,8 @@
     const kids = localData.kids.map((k, i) => {
       const name   = document.getElementById('s-name-' + i)?.value.trim() || k.name;
       const weekly = parseFloat(document.getElementById('s-weekly-' + i)?.value);
-      return { ...k, name, weeklyAmount: isNaN(weekly) || weekly < 0 ? (k.weeklyAmount ?? 30) : weekly };
+      const avatar = document.getElementById('s-avatar-' + i)?.value || k.avatar || AVATARS[i % AVATARS.length];
+      return { ...k, name, avatar, weeklyAmount: isNaN(weekly) || weekly < 0 ? (k.weeklyAmount ?? 30) : weekly };
     });
     await dbUpdate({ kids, payDay });
     showSimpleToast('Inställningar sparade');
@@ -1079,7 +1118,7 @@
       const negClass = bal < 0 ? ' negative' : '';
       const display  = bal < 0 ? ('−' + Math.abs(bal)) : String(bal);
       card.innerHTML =
-        '<div class="kid-avatar" aria-hidden="true">' + (AVATARS[i % AVATARS.length] || '🧒') + '</div>' +
+        '<div class="kid-avatar" aria-hidden="true">' + (kid.avatar || AVATARS[i % AVATARS.length] || '🧒') + '</div>' +
         '<div class="kid-name">' + escHtml(kid.name) + '</div>' +
         '<div class="kid-balance' + negClass + '" id="balance-' + i + '" aria-hidden="true">' + display + '</div>' +
         '<div class="kid-unit" aria-hidden="true">kr</div>' +
@@ -1102,22 +1141,33 @@
     document.getElementById('s-payday').value = data.payDay ?? 1;
     const canRemove = (data.kids || []).length > 1;
     document.getElementById('s-kids-list').innerHTML =
-      (data.kids || []).map((kid, i) =>
-        '<div class="settings-row">' +
-          '<div style="flex:1"><div class="settings-label">' + (AVATARS[i % AVATARS.length] || '🧒') + ' ' + escHtml(kid.name) + '</div>' +
-          '<div class="settings-sub">Namn</div></div>' +
+      (data.kids || []).map((kid, i) => {
+        const av = kid.avatar || AVATARS[i % AVATARS.length] || '🧒';
+        return '<div class="settings-row">' +
+          '<div style="flex:1"><div class="settings-label" style="display:flex;align-items:center;gap:6px">' +
+            '<button class="avatar-pick-btn" id="s-avatar-btn-' + i + '" ' +
+              'onclick="toggleAvatarPicker(' + i + ')" aria-label="Välj emoji för ' + escHtml(kid.name) + '">' + av + '</button>' +
+            escHtml(kid.name) + '</div>' +
+          '<div class="settings-sub">Tryck emoji för att byta</div></div>' +
           '<div style="display:flex;align-items:center;gap:8px">' +
-          '<input type="text" id="s-name-' + i + '" class="settings-input" value="' + escHtml(kid.name) + '" ' +
-            'maxlength="20" aria-label="Namn på ' + escHtml(kid.name) + '" />' +
-          (canRemove ? '<button class="remove-kid-btn" onclick="confirmRemoveKid(' + i + ',this)" aria-label="Ta bort ' + escHtml(kid.name) + '">✕</button>' : '') +
+            '<input type="hidden" id="s-avatar-' + i + '" value="' + av + '" />' +
+            '<input type="text" id="s-name-' + i + '" class="settings-input" value="' + escHtml(kid.name) + '" ' +
+              'maxlength="20" aria-label="Namn på ' + escHtml(kid.name) + '" />' +
+            (canRemove ? '<button class="remove-kid-btn" onclick="confirmRemoveKid(' + i + ',this)" aria-label="Ta bort ' + escHtml(kid.name) + '">✕</button>' : '') +
           '</div></div>' +
-        '<div class="settings-row">' +
-          '<div><div class="settings-label">Veckopeng</div>' +
-          '<div class="settings-sub">kr per vecka</div></div>' +
-          '<input type="number" id="s-weekly-' + i + '" class="settings-input" min="0" step="5" ' +
-            'value="' + (kid.weeklyAmount ?? data.weeklyAmount ?? 30) + '" ' +
-            'aria-label="Veckopeng för ' + escHtml(kid.name) + ' i kronor" /></div>'
-      ).join('') +
+          '<div class="emoji-grid" id="s-avatar-picker-' + i + '" style="display:none">' +
+            EMOJI_OPTIONS.map(e =>
+              '<button type="button" class="emoji-option' + (e === av ? ' selected' : '') + '" ' +
+                'data-emoji="' + e + '" onclick="pickAvatar(' + i + ',this)">' + e + '</button>'
+            ).join('') +
+          '</div>' +
+          '<div class="settings-row">' +
+            '<div><div class="settings-label">Veckopeng</div>' +
+            '<div class="settings-sub">kr per vecka</div></div>' +
+            '<input type="number" id="s-weekly-' + i + '" class="settings-input" min="0" step="5" ' +
+              'value="' + (kid.weeklyAmount ?? data.weeklyAmount ?? 30) + '" ' +
+              'aria-label="Veckopeng för ' + escHtml(kid.name) + ' i kronor" /></div>';
+      }).join('') +
       '<div style="padding:10px 18px 4px">' +
         '<button class="add-kid-btn" onclick="addKid()">＋ Lägg till barn</button>' +
       '</div>';
