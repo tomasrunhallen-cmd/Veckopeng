@@ -151,10 +151,10 @@
     .header-title { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
     .header-right { display: flex; align-items: center; gap: 8px; }
     .icon-btn {
-      width: 42px; height: 42px; background: var(--toggle-bg);
-      border: none; border-radius: 12px;
+      width: 48px; height: 48px; background: var(--toggle-bg);
+      border: none; border-radius: 13px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 20px; cursor: pointer; color: var(--text);
+      font-size: 22px; cursor: pointer; color: var(--text);
       transition: background 0.15s, transform 0.1s; -webkit-tap-highlight-color: transparent;
     }
     .icon-btn:active { transform: scale(0.92); }
@@ -221,6 +221,23 @@
     .kid-card.blue .change-btn   { background: rgba(96,165,250,0.15);  color: #60a5fa; }
     .kid-card.pink .change-btn   { background: rgba(244,114,182,0.15); color: #f472b6; }
     .kid-card.yellow .change-btn { background: rgba(251,191,36,0.15);  color: #fbbf24; }
+
+    #bg-layer {
+      position: fixed; inset: 0; z-index: -1;
+      background-size: cover; background-position: center; pointer-events: none;
+    }
+    #bg-layer.active::after {
+      content: ''; position: absolute; inset: 0; background: rgba(0,0,0,0.45);
+    }
+    .bg-preview {
+      width: 48px; height: 48px; border-radius: 10px; object-fit: cover;
+      border: 2px solid var(--border);
+    }
+    .bg-remove-btn {
+      font-size: 12px; padding: 4px 10px; border-radius: 8px;
+      background: rgba(239,68,68,0.15); color: #f87171;
+      border: 1px solid rgba(239,68,68,0.25); cursor: pointer; font-family: inherit;
+    }
 
     .theme-swatches { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
     .theme-swatch {
@@ -328,13 +345,6 @@
       transition: opacity 0.15s, transform 0.1s; -webkit-tap-highlight-color: transparent;
     }
     .save-btn:active { transform: scale(0.97); }
-    .payout-now-btn {
-      width: 100%; margin-top: 8px; padding: 15px; background: #10b981; color: #fff;
-      border: none; border-radius: 14px; font-size: 15px; font-weight: 700;
-      cursor: pointer; font-family: inherit;
-      transition: opacity 0.15s, transform 0.1s; -webkit-tap-highlight-color: transparent;
-    }
-    .payout-now-btn:active { transform: scale(0.97); }
 
     /* OVERLAY */
     .overlay {
@@ -456,6 +466,9 @@
   </style>
 </head>
 <body>
+
+<div id="bg-layer"></div>
+<input type="file" id="bg-file-input" accept="image/*" style="display:none" onchange="onBgFileSelected(event)">
 
 <!-- LOADING -->
 <div id="loading-overlay">
@@ -607,9 +620,13 @@
             <button class="theme-swatch" data-theme="dag"     style="background:#f0f0f7;border-color:rgba(0,0,0,0.15)" onclick="pickTheme('dag')" aria-label="Dag"></button>
           </div>
         </div>
+        <div class="settings-row" id="s-bg-row">
+          <div><div class="settings-label">Bakgrundsbild</div>
+          <div class="settings-sub">Välj bild från enheten</div></div>
+          <div style="display:flex;align-items:center;gap:8px" id="s-bg-controls"></div>
+        </div>
       </div>
       <button class="save-btn" onclick="saveSettings()">Spara inställningar</button>
-      <button class="payout-now-btn" onclick="forcePayoutNow()">Utbetala nu</button>
     </div>
   </div>
 </div>
@@ -856,6 +873,65 @@
     pickTheme(next);
   };
 
+  // ── BACKGROUND IMAGE ──
+  function initBgImage() {
+    const saved = localStorage.getItem('vp-bg-img');
+    if (saved) applyBgImage(saved);
+    renderBgControls();
+  }
+  function applyBgImage(dataUrl) {
+    const layer = document.getElementById('bg-layer');
+    layer.style.backgroundImage = 'url(' + dataUrl + ')';
+    layer.classList.add('active');
+    document.body.style.backgroundColor = 'transparent';
+  }
+  function renderBgControls() {
+    const ctrl = document.getElementById('s-bg-controls');
+    if (!ctrl) return;
+    const saved = localStorage.getItem('vp-bg-img');
+    if (saved) {
+      ctrl.innerHTML =
+        '<img src="' + saved + '" class="bg-preview" alt="Bakgrund">' +
+        '<button class="bg-remove-btn" onclick="removeBgImage()">Ta bort</button>';
+    } else {
+      ctrl.innerHTML = '<button class="save-btn" style="margin:0;padding:10px 16px;font-size:13px" onclick="document.getElementById(\'bg-file-input\').click()">Välj bild</button>';
+    }
+  }
+  window.onBgFileSelected = function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    e.target.value = '';
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = function() {
+      const MAX = 1440;
+      let w = img.width, h = img.height;
+      if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+      try {
+        localStorage.setItem('vp-bg-img', dataUrl);
+      } catch(err) {
+        showSimpleToast('Bilden är för stor, prova en mindre');
+        return;
+      }
+      applyBgImage(dataUrl);
+      renderBgControls();
+    };
+    img.src = url;
+  };
+  window.removeBgImage = function() {
+    localStorage.removeItem('vp-bg-img');
+    const layer = document.getElementById('bg-layer');
+    layer.style.backgroundImage = '';
+    layer.classList.remove('active');
+    document.body.style.backgroundColor = '';
+    renderBgControls();
+  };
+
   // ── HELPERS ──
   function hide(id)            { document.getElementById(id).style.display = 'none'; }
   function show(id, d='block') { document.getElementById(id).style.display = d; }
@@ -1026,7 +1102,10 @@
     const s = document.getElementById('settings-section');
     const opening = s.style.display !== 'block';
     s.style.display = opening ? 'block' : 'none';
-    if (opening) setTimeout(() => s.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+    if (opening) {
+      renderBgControls();
+      setTimeout(() => s.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+    }
   };
 
   window.forcePayoutNow = async function() {
@@ -1379,6 +1458,7 @@
   }
 
   initTheme();
+  initBgImage();
 
   if (IS_DEMO) {
     hide('loading-overlay'); show('login-screen', 'flex');
