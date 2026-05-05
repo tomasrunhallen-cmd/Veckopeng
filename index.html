@@ -948,6 +948,25 @@
     showSimpleToast('Veckopeng utbetald!');
   };
 
+  window.confirmRemoveKid = function(idx, el) {
+    if (el.dataset.confirm) {
+      window.removeKid(idx);
+    } else {
+      el.dataset.confirm = '1';
+      el.textContent = 'Bekräfta?';
+      el.style.background = 'rgba(239,68,68,0.3)';
+      el.style.borderColor = '#ef4444';
+      setTimeout(() => {
+        if (el.dataset.confirm) {
+          delete el.dataset.confirm;
+          el.textContent = '✕';
+          el.style.background = '';
+          el.style.borderColor = '';
+        }
+      }, 3000);
+    }
+  };
+
   window.addKid = async function() {
     const newKid = { name: 'Nytt barn', balance: 0, weeklyAmount: localData.weeklyAmount ?? 30 };
     await dbUpdate({ kids: [...localData.kids, newKid] });
@@ -1090,7 +1109,7 @@
           '<div style="display:flex;align-items:center;gap:8px">' +
           '<input type="text" id="s-name-' + i + '" class="settings-input" value="' + escHtml(kid.name) + '" ' +
             'maxlength="20" aria-label="Namn på ' + escHtml(kid.name) + '" />' +
-          (canRemove ? '<button class="remove-kid-btn" onclick="removeKid(' + i + ')" aria-label="Ta bort ' + escHtml(kid.name) + '">✕</button>' : '') +
+          (canRemove ? '<button class="remove-kid-btn" onclick="confirmRemoveKid(' + i + ',this)" aria-label="Ta bort ' + escHtml(kid.name) + '">✕</button>' : '') +
           '</div></div>' +
         '<div class="settings-row">' +
           '<div><div class="settings-label">Veckopeng</div>' +
