@@ -363,19 +363,45 @@
   <div class="login-logo">🐷</div>
   <div class="login-title">
     <h1>Spargris</h1>
-    <p id="login-subtitle">Logga in för att fortsätta</p>
+    <p id="login-subtitle">Håll koll på barnens sparande</p>
   </div>
   <div class="login-card">
-    <div class="input-group">
-      <label for="login-email">E-postadress</label>
-      <input type="email" id="login-email" placeholder="din@email.se" autocomplete="email" />
+    <div class="onboard-tabs" role="tablist">
+      <button class="onboard-tab active" id="ltab-login" role="tab" aria-selected="true"
+              aria-controls="lpanel-login" onclick="switchLoginTab('login')">Logga in</button>
+      <button class="onboard-tab" id="ltab-register" role="tab" aria-selected="false"
+              aria-controls="lpanel-register" onclick="switchLoginTab('register')">Skapa konto</button>
     </div>
-    <div class="input-group">
-      <label for="login-password">Lösenord</label>
-      <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" />
+    <!-- Logga in -->
+    <div id="lpanel-login" class="onboard-panel active" role="tabpanel" aria-labelledby="ltab-login">
+      <div class="input-group">
+        <label for="login-email">E-postadress</label>
+        <input type="email" id="login-email" placeholder="din@email.se" autocomplete="email" />
+      </div>
+      <div class="input-group">
+        <label for="login-password">Lösenord</label>
+        <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" />
+      </div>
+      <div class="error-msg" id="login-error" role="alert"></div>
+      <button class="btn-login" id="login-btn" onclick="doLogin()">Logga in</button>
     </div>
-    <div class="error-msg" id="login-error" role="alert"></div>
-    <button class="btn-login" id="login-btn" onclick="doLogin()">Logga in</button>
+    <!-- Skapa konto -->
+    <div id="lpanel-register" class="onboard-panel" role="tabpanel" aria-labelledby="ltab-register">
+      <div class="input-group">
+        <label for="reg-email">E-postadress</label>
+        <input type="email" id="reg-email" placeholder="din@email.se" autocomplete="email" />
+      </div>
+      <div class="input-group">
+        <label for="reg-password">Lösenord</label>
+        <input type="password" id="reg-password" placeholder="Minst 6 tecken" autocomplete="new-password" />
+      </div>
+      <div class="input-group">
+        <label for="reg-password2">Bekräfta lösenord</label>
+        <input type="password" id="reg-password2" placeholder="••••••••" autocomplete="new-password" />
+      </div>
+      <div class="error-msg" id="reg-error" role="alert"></div>
+      <button class="btn-login" id="reg-btn" onclick="doRegister()">Skapa konto</button>
+    </div>
   </div>
 </div>
 
@@ -542,7 +568,8 @@
   let app, auth, db;
   if (!IS_DEMO) {
     const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
-    const { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence }
+    const { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+            signOut, onAuthStateChanged, setPersistence, browserLocalPersistence }
       = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
     const { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, addDoc, collection,
             query, orderBy, limit, getDocs }
@@ -551,7 +578,7 @@
     auth = getAuth(app);
     db   = getFirestore(app);
     setPersistence(auth, browserLocalPersistence);
-    window._fb = { auth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
+    window._fb = { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged,
                    db, doc, getDoc, setDoc, updateDoc, onSnapshot, addDoc, collection,
                    query, orderBy, limit, getDocs };
   }
@@ -1035,6 +1062,38 @@
   }
 
   // ── AUTH ──
+  window.switchLoginTab = function(tab) {
+    ['login','register'].forEach(t => {
+      document.getElementById('ltab-' + t).classList.toggle('active', t === tab);
+      document.getElementById('ltab-' + t).setAttribute('aria-selected', t === tab);
+      document.getElementById('lpanel-' + t).classList.toggle('active', t === tab);
+    });
+  };
+
+  window.doRegister = async function() {
+    const email = document.getElementById('reg-email').value.trim();
+    const pw    = document.getElementById('reg-password').value;
+    const pw2   = document.getElementById('reg-password2').value;
+    const btn   = document.getElementById('reg-btn');
+    const err   = document.getElementById('reg-error');
+    err.style.display = 'none';
+    if (!email || !pw) { err.textContent = 'Fyll i e-post och lösenord'; err.style.display = 'block'; return; }
+    if (pw.length < 6)  { err.textContent = 'Lösenordet måste vara minst 6 tecken'; err.style.display = 'block'; return; }
+    if (pw !== pw2)     { err.textContent = 'Lösenorden matchar inte'; err.style.display = 'block'; return; }
+    btn.disabled = true; btn.textContent = 'Skapar konto…';
+    try {
+      const { auth, createUserWithEmailAndPassword } = window._fb;
+      await createUserWithEmailAndPassword(auth, email, pw);
+      // onAuthStateChanged fires → getFamilyOrOnboard → onboarding screen
+    } catch(e) {
+      const msg = e.code === 'auth/email-already-in-use' ? 'E-postadressen används redan'
+                : e.code === 'auth/invalid-email'        ? 'Ogiltig e-postadress'
+                : 'Kunde inte skapa konto. Försök igen.';
+      err.textContent = msg; err.style.display = 'block';
+      btn.disabled = false; btn.textContent = 'Skapa konto';
+    }
+  };
+
   window.doLogin = async function() {
     const email = document.getElementById('login-email').value.trim();
     const pw    = document.getElementById('login-password').value;
@@ -1062,6 +1121,9 @@
   };
   document.getElementById('login-password').addEventListener('keydown', e => {
     if (e.key === 'Enter') window.doLogin();
+  });
+  document.getElementById('reg-password2').addEventListener('keydown', e => {
+    if (e.key === 'Enter') window.doRegister();
   });
   document.getElementById('join-code').addEventListener('keydown', e => {
     if (e.key === 'Enter') window.joinFamily();
