@@ -1001,7 +1001,7 @@
           el.style.background = '';
           el.style.borderColor = '';
         }
-      }, 3000);
+      }, 5000);
     }
   };
 
@@ -1148,7 +1148,7 @@
             '<button class="avatar-pick-btn" id="s-avatar-btn-' + i + '" ' +
               'onclick="toggleAvatarPicker(' + i + ')" aria-label="Välj emoji för ' + escHtml(kid.name) + '">' + av + '</button>' +
             escHtml(kid.name) + '</div>' +
-          '<div class="settings-sub">Tryck emoji för att byta</div></div>' +
+          '<div class="settings-sub">Tryck på emoji för att byta</div></div>' +
           '<div style="display:flex;align-items:center;gap:8px">' +
             '<input type="hidden" id="s-avatar-' + i + '" value="' + av + '" />' +
             '<input type="text" id="s-name-' + i + '" class="settings-input" value="' + escHtml(kid.name) + '" ' +
