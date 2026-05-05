@@ -1290,6 +1290,10 @@
         }
       } else {
         currentUid = null; FAMILY_ID = null; FAMILY_DOC = 'families/main';
+        const loginBtn = document.getElementById('login-btn');
+        const regBtn   = document.getElementById('reg-btn');
+        if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = 'Logga in'; }
+        if (regBtn)   { regBtn.disabled = false;   regBtn.textContent = 'Skapa konto'; }
         hide('app-screen'); hide('onboard-screen'); show('login-screen', 'flex');
         if (unsubSnapshot) { unsubSnapshot(); unsubSnapshot = null; }
       }
