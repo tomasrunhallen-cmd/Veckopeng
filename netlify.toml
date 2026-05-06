@@ -1,0 +1,9 @@
+[build]
+  publish = "."
+
+# Hoppa över byggen för feature-branches och PR-previews → sparar credits
+[context.branch-deploy]
+  ignore = "exit 0"
+
+[context.deploy-preview]
+  ignore = "exit 0"
