@@ -2,7 +2,7 @@
 <html lang="sv" data-theme="natt">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -205,7 +205,7 @@
     /* HEADER */
     .app-header {
       display: flex; align-items: center; justify-content: space-between;
-      padding: max(56px, calc(env(safe-area-inset-top, 44px) + 16px)) 20px 18px;
+      padding: env(safe-area-inset-top, 44px) 20px 16px;
       background:
         radial-gradient(ellipse 100% 100% at 50% 0%, rgba(107,91,255,0.09) 0%, transparent 70%),
         var(--bg);
@@ -213,18 +213,17 @@
     }
     .header-left { display: flex; align-items: center; gap: 12px; }
     .header-icon-wrap {
-      width: 44px; height: 44px; border-radius: 14px; flex-shrink: 0;
+      width: 48px; height: 48px; border-radius: 14px; flex-shrink: 0;
       background: var(--primary-s); border: 1px solid var(--primary-g);
       display: flex; align-items: center; justify-content: center; overflow: hidden;
     }
-    .header-app-icon { width: 44px; height: 44px; object-fit: cover; display: block; }
-    .header-app-emoji { font-size: 26px; line-height: 1; display: none; }
-    .header-text { display: flex; flex-direction: column; gap: 2px; }
+    .header-app-icon { width: 48px; height: 48px; object-fit: cover; display: block; }
+    .header-app-emoji { font-size: 28px; line-height: 1; display: none; }
+    .header-text { display: flex; flex-direction: column; gap: 1px; }
     .header-date { font-size: 13px; font-weight: 500; color: var(--ink-2); letter-spacing: -0.01em; }
-    .header-title { font-size: 26px; font-weight: 800; letter-spacing: -0.035em; color: var(--ink); }
     .header-right { display: flex; align-items: center; gap: 8px; }
     .icon-btn {
-      width: 42px; height: 42px; border-radius: 50%;
+      width: 46px; height: 46px; border-radius: 50%;
       background: var(--glass); border: none;
       display: flex; align-items: center; justify-content: center;
       cursor: pointer; color: var(--ink);
@@ -252,12 +251,12 @@
     .payout-text span { color: var(--ink-2); font-weight: 500; font-size: 12px; }
 
     /* KID CARDS */
-    .cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding-bottom: 4px; }
+    .cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding-bottom: 4px; }
     @media (max-width: 340px) { .cards-grid { grid-template-columns: 1fr; } }
 
     .child-card {
       background: var(--el1); border: 1px solid var(--line);
-      border-radius: 28px; padding: 22px 20px; cursor: pointer;
+      border-radius: 30px; padding: 24px 22px; cursor: pointer;
       transition: transform 0.15s ease; position: relative; overflow: hidden;
     }
     .child-card:active { transform: scale(0.97); }
@@ -268,29 +267,29 @@
       pointer-events: none;
     }
     .card-emoji-wrap {
-      width: 52px; height: 52px; border-radius: 16px;
+      width: 58px; height: 58px; border-radius: 18px;
       background: var(--el2); display: flex; align-items: center;
-      justify-content: center; font-size: 28px;
-      margin-bottom: 12px; position: relative; z-index: 2;
+      justify-content: center; font-size: 32px;
+      margin-bottom: 14px; position: relative; z-index: 2;
       box-shadow: 0 0 0 1.5px var(--kcs, var(--line));
     }
     .card-name {
-      font-size: 14px; font-weight: 500; color: var(--ink-2);
+      font-size: 15px; font-weight: 500; color: var(--ink-2);
       margin-bottom: 4px; letter-spacing: -0.01em; position: relative; z-index: 2;
     }
-    .card-balance { display: flex; align-items: baseline; gap: 4px; margin-bottom: 14px; position: relative; z-index: 2; }
+    .card-balance { display: flex; align-items: baseline; gap: 5px; margin-bottom: 16px; position: relative; z-index: 2; }
     .card-balance-num {
-      font-size: clamp(36px, 9vw, 48px); font-weight: 700;
+      font-size: clamp(40px, 10vw, 52px); font-weight: 700;
       letter-spacing: -0.04em; line-height: 1;
       color: var(--kc, var(--ink));
     }
     .card-balance-num.negative { color: var(--red) !important; }
-    .card-balance-cur { font-size: 14px; color: var(--ink-2); font-weight: 500; align-self: flex-end; margin-bottom: 3px; }
+    .card-balance-cur { font-size: 15px; color: var(--ink-2); font-weight: 500; align-self: flex-end; margin-bottom: 3px; }
 
-    .card-goal { margin-bottom: 12px; position: relative; z-index: 2; }
+    .card-goal { margin-bottom: 14px; position: relative; z-index: 2; }
     .card-goal-row {
       display: flex; justify-content: space-between;
-      font-size: 11px; color: var(--ink-2); margin-bottom: 5px; font-weight: 500;
+      font-size: 12px; color: var(--ink-2); margin-bottom: 6px; font-weight: 500;
     }
     .card-goal-row strong { color: var(--ink); font-weight: 600; }
     .goal-bar { height: 5px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden; }
@@ -305,7 +304,7 @@
 
     .card-cta {
       width: 100%; background: var(--el2); border: none; color: var(--ink-2);
-      border-radius: 14px; padding: 12px; font-family: inherit;
+      border-radius: 14px; padding: 14px; font-family: inherit;
       font-size: 14px; font-weight: 600; cursor: pointer;
       letter-spacing: -0.01em; position: relative; z-index: 2;
       display: flex; align-items: center; justify-content: center; gap: 6px;
@@ -678,10 +677,7 @@
              onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
         <span class="header-app-emoji">🐷</span>
       </div>
-      <div class="header-text">
-        <span class="header-date" id="header-date"></span>
-        <span class="header-title">Min Spargris</span>
-      </div>
+      <span class="header-date" id="header-date"></span>
     </div>
     <div class="header-right">
       <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" aria-label="Byt tema"></button>
