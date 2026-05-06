@@ -84,9 +84,9 @@
       font-feature-settings: 'ss01','cv11';
       transition: background 0.3s, color 0.3s;
     }
-    .ic { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; display: block; flex-shrink: 0; }
+    .ic { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; display: block; flex-shrink: 0; }
     .ic-sm { width: 14px; height: 14px; }
-    .ic-lg { width: 20px; height: 20px; }
+    .ic-lg { width: 22px; height: 22px; }
 
     /* LOADING */
     #loading-overlay {
@@ -205,21 +205,21 @@
     /* HEADER */
     .app-header {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 52px 20px 14px;
+      padding: max(56px, calc(env(safe-area-inset-top, 44px) + 16px)) 20px 18px;
       background:
         radial-gradient(ellipse 100% 100% at 50% 0%, rgba(107,91,255,0.09) 0%, transparent 70%),
         var(--bg);
       position: sticky; top: 0; z-index: 10;
     }
-    .header-left { display: flex; align-items: center; gap: 10px; }
-    .header-app-icon { width: 32px; height: 32px; border-radius: 28%; object-fit: cover; flex-shrink: 0; }
-    .header-app-emoji { font-size: 26px; line-height: 1; flex-shrink: 0; display: none; }
-    .header-text { display: flex; flex-direction: column; gap: 1px; }
-    .header-date { font-size: 12px; font-weight: 500; color: var(--ink-2); letter-spacing: -0.01em; }
-    .header-title { font-size: 20px; font-weight: 800; letter-spacing: -0.035em; color: var(--ink); }
-    .header-right { display: flex; align-items: center; gap: 6px; }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .header-app-icon { width: 44px; height: 44px; border-radius: 28%; object-fit: cover; flex-shrink: 0; }
+    .header-app-emoji { font-size: 34px; line-height: 1; flex-shrink: 0; display: none; }
+    .header-text { display: flex; flex-direction: column; gap: 2px; }
+    .header-date { font-size: 13px; font-weight: 500; color: var(--ink-2); letter-spacing: -0.01em; }
+    .header-title { font-size: 26px; font-weight: 800; letter-spacing: -0.035em; color: var(--ink); }
+    .header-right { display: flex; align-items: center; gap: 8px; }
     .icon-btn {
-      width: 36px; height: 36px; border-radius: 50%;
+      width: 42px; height: 42px; border-radius: 50%;
       background: var(--glass); border: none;
       display: flex; align-items: center; justify-content: center;
       cursor: pointer; color: var(--ink);
@@ -247,12 +247,12 @@
     .payout-text span { color: var(--ink-2); font-weight: 500; font-size: 12px; }
 
     /* KID CARDS */
-    .cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-bottom: 4px; }
+    .cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding-bottom: 4px; }
     @media (max-width: 340px) { .cards-grid { grid-template-columns: 1fr; } }
 
     .child-card {
       background: var(--el1); border: 1px solid var(--line);
-      border-radius: 24px; padding: 18px 16px; cursor: pointer;
+      border-radius: 28px; padding: 22px 20px; cursor: pointer;
       transition: transform 0.15s ease; position: relative; overflow: hidden;
     }
     .child-card:active { transform: scale(0.97); }
@@ -263,26 +263,26 @@
       pointer-events: none;
     }
     .card-emoji-wrap {
-      width: 44px; height: 44px; border-radius: 14px;
+      width: 52px; height: 52px; border-radius: 16px;
       background: var(--el2); display: flex; align-items: center;
-      justify-content: center; font-size: 24px;
-      margin-bottom: 10px; position: relative; z-index: 2;
+      justify-content: center; font-size: 28px;
+      margin-bottom: 12px; position: relative; z-index: 2;
       box-shadow: 0 0 0 1.5px var(--kcs, var(--line));
     }
     .card-name {
-      font-size: 13px; font-weight: 500; color: var(--ink-2);
-      margin-bottom: 3px; letter-spacing: -0.01em; position: relative; z-index: 2;
+      font-size: 14px; font-weight: 500; color: var(--ink-2);
+      margin-bottom: 4px; letter-spacing: -0.01em; position: relative; z-index: 2;
     }
-    .card-balance { display: flex; align-items: baseline; gap: 4px; margin-bottom: 12px; position: relative; z-index: 2; }
+    .card-balance { display: flex; align-items: baseline; gap: 4px; margin-bottom: 14px; position: relative; z-index: 2; }
     .card-balance-num {
-      font-size: clamp(32px, 8vw, 42px); font-weight: 700;
+      font-size: clamp(36px, 9vw, 48px); font-weight: 700;
       letter-spacing: -0.04em; line-height: 1;
       color: var(--kc, var(--ink));
     }
     .card-balance-num.negative { color: var(--red) !important; }
-    .card-balance-cur { font-size: 13px; color: var(--ink-2); font-weight: 500; align-self: flex-end; margin-bottom: 2px; }
+    .card-balance-cur { font-size: 14px; color: var(--ink-2); font-weight: 500; align-self: flex-end; margin-bottom: 3px; }
 
-    .card-goal { margin-bottom: 10px; position: relative; z-index: 2; }
+    .card-goal { margin-bottom: 12px; position: relative; z-index: 2; }
     .card-goal-row {
       display: flex; justify-content: space-between;
       font-size: 11px; color: var(--ink-2); margin-bottom: 5px; font-weight: 500;
@@ -300,8 +300,8 @@
 
     .card-cta {
       width: 100%; background: var(--el2); border: none; color: var(--ink-2);
-      border-radius: 12px; padding: 10px; font-family: inherit;
-      font-size: 13px; font-weight: 600; cursor: pointer;
+      border-radius: 14px; padding: 12px; font-family: inherit;
+      font-size: 14px; font-weight: 600; cursor: pointer;
       letter-spacing: -0.01em; position: relative; z-index: 2;
       display: flex; align-items: center; justify-content: center; gap: 6px;
       transition: background 0.2s ease, color 0.2s ease;
