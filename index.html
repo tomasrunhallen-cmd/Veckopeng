@@ -76,6 +76,7 @@
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html { background: #000; min-height: 100dvh; }
     html, body { min-height: 100dvh; }
     body {
       font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
@@ -233,7 +234,7 @@
     .icon-btn:hover { background: var(--glass-h); }
     .icon-btn:active { transform: scale(0.88); }
 
-    .main-content { padding: 0 16px 100px; max-width: 640px; margin: 0 auto; }
+    .main-content { padding: 0 16px calc(100px + env(safe-area-inset-bottom, 0px)); max-width: 640px; margin: 0 auto; }
 
     /* PAYOUT BANNER */
     .payout-banner {
