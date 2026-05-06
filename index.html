@@ -18,7 +18,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg:        #000000;
+      --bg:        #0b0b15;
       --el1:       #141416;
       --el2:       #1f1f23;
       --glass:     rgba(255,255,255,0.05);
@@ -76,8 +76,7 @@
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    html { background: #000; min-height: 100dvh; }
-    html, body { min-height: 100dvh; }
+    html, body { min-height: 100dvh; background: var(--bg); }
     body {
       font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
       background: var(--bg); color: var(--ink);
@@ -239,8 +238,11 @@
     /* PAYOUT BANNER */
     .payout-banner {
       margin: 8px 0 14px; padding: 14px 16px;
-      background: rgba(20,20,22,0.88); border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(16,16,24,0.88); border: 1px solid rgba(255,255,255,0.10);
       border-radius: 16px; display: flex; align-items: center; gap: 12px;
+    }
+    :root[data-theme="dag"] .payout-banner, :root[data-theme="light"] .payout-banner {
+      background: rgba(255,255,255,0.92); border-color: rgba(0,0,0,0.10);
     }
     .payout-icon-wrap {
       width: 38px; height: 38px; border-radius: 11px; flex-shrink: 0;
@@ -249,6 +251,8 @@
     }
     .payout-text strong { color: #fff; font-weight: 700; display: block; letter-spacing: -0.01em; font-size: 14px; }
     .payout-text span { color: rgba(255,255,255,0.70); font-weight: 500; font-size: 12px; }
+    :root[data-theme="dag"] .payout-text strong, :root[data-theme="light"] .payout-text strong { color: #0a0a14; }
+    :root[data-theme="dag"] .payout-text span, :root[data-theme="light"] .payout-text span { color: rgba(10,10,20,0.60); }
 
     /* KID CARDS */
     .cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding-bottom: 4px; }
