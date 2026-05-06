@@ -212,8 +212,13 @@
       position: sticky; top: 0; z-index: 10;
     }
     .header-left { display: flex; align-items: center; gap: 12px; }
-    .header-app-icon { width: 44px; height: 44px; border-radius: 28%; object-fit: cover; flex-shrink: 0; }
-    .header-app-emoji { font-size: 34px; line-height: 1; flex-shrink: 0; display: none; }
+    .header-icon-wrap {
+      width: 44px; height: 44px; border-radius: 14px; flex-shrink: 0;
+      background: var(--primary-s); border: 1px solid var(--primary-g);
+      display: flex; align-items: center; justify-content: center; overflow: hidden;
+    }
+    .header-app-icon { width: 44px; height: 44px; object-fit: cover; display: block; }
+    .header-app-emoji { font-size: 26px; line-height: 1; display: none; }
     .header-text { display: flex; flex-direction: column; gap: 2px; }
     .header-date { font-size: 13px; font-weight: 500; color: var(--ink-2); letter-spacing: -0.01em; }
     .header-title { font-size: 26px; font-weight: 800; letter-spacing: -0.035em; color: var(--ink); }
@@ -668,9 +673,11 @@
 <div id="app-screen">
   <div class="app-header">
     <div class="header-left">
-      <img src="icon-192.png" alt="" class="header-app-icon" aria-hidden="true"
-           onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-      <span class="header-app-emoji" aria-hidden="true">🐷</span>
+      <div class="header-icon-wrap" aria-hidden="true">
+        <img src="icon-192.png" alt="" class="header-app-icon"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+        <span class="header-app-emoji">🐷</span>
+      </div>
       <div class="header-text">
         <span class="header-date" id="header-date"></span>
         <span class="header-title">Översikt</span>
@@ -813,13 +820,17 @@
   // ── REAL FIREBASE ──
   let app, auth, db;
   if (!IS_DEMO) {
-    const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
-    const { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
-            signOut, onAuthStateChanged, setPersistence, browserLocalPersistence }
-      = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
-    const { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, addDoc, collection,
-            query, orderBy, limit, getDocs }
-      = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+    const [
+      { initializeApp },
+      { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+        signOut, onAuthStateChanged, setPersistence, browserLocalPersistence },
+      { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, addDoc, collection,
+        query, orderBy, limit, getDocs }
+    ] = await Promise.all([
+      import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js'),
+      import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js'),
+      import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js'),
+    ]);
     app  = initializeApp(firebaseConfig);
     auth = getAuth(app);
     db   = getFirestore(app);
