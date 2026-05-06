@@ -237,18 +237,17 @@
 
     /* PAYOUT BANNER */
     .payout-banner {
-      margin: 8px 0 14px; padding: 13px 16px;
-      background: var(--glass); border: 1px solid var(--line);
+      margin: 8px 0 14px; padding: 14px 16px;
+      background: rgba(20,20,22,0.88); border: 1px solid rgba(255,255,255,0.10);
       border-radius: 16px; display: flex; align-items: center; gap: 12px;
-      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
     }
     .payout-icon-wrap {
-      width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+      width: 38px; height: 38px; border-radius: 11px; flex-shrink: 0;
       background: var(--primary-s); color: var(--primary);
       display: flex; align-items: center; justify-content: center;
     }
-    .payout-text strong { color: var(--ink); font-weight: 600; display: block; letter-spacing: -0.01em; font-size: 13px; }
-    .payout-text span { color: var(--ink-2); font-weight: 500; font-size: 12px; }
+    .payout-text strong { color: #fff; font-weight: 700; display: block; letter-spacing: -0.01em; font-size: 14px; }
+    .payout-text span { color: rgba(255,255,255,0.70); font-weight: 500; font-size: 12px; }
 
     /* KID CARDS */
     .cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding-bottom: 4px; }
@@ -541,7 +540,7 @@
       background-size: cover; background-position: center; pointer-events: none;
     }
     #bg-layer.active::after {
-      content: ''; position: absolute; inset: 0; background: rgba(0,0,0,0.50);
+      content: ''; position: absolute; inset: 0; background: rgba(0,0,0,0.58);
     }
 
     /* ANIMATIONS */
@@ -791,6 +790,9 @@
   };
 
   const IS_DEMO = firebaseConfig.apiKey.startsWith('REPLACE_');
+
+  // ── FEATURE FLAGS ──
+  const CHILD_FRIENDLY = true; // child-friendly copy: "Ändra" vs "Ändra saldo", "Veckopeng på fredag" etc.
 
   // ── DEMO MODE ──
   let demoData = {
@@ -1158,7 +1160,7 @@
     span.style.color = kc.c;
     const name = localData?.kids?.[kidIdx]?.name || ('Barn ' + (kidIdx + 1));
     span.textContent = escHtml(name);
-    title.firstChild.textContent = 'Ändra saldo – ';
+    title.firstChild.textContent = CHILD_FRIENDLY ? 'Ändra – ' : 'Ändra saldo – ';
     document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
     const inp = document.getElementById('amount-input');
     inp.value = '';
@@ -1389,8 +1391,12 @@
     const next     = new Date(lastDue);
     if (next.getTime() < todayMid.getTime()) next.setDate(next.getDate() + 7);
     const diff = Math.round((next - todayMid) / (24*60*60*1000));
-    const mainText = diff === 0 ? 'Utbetalning idag!' : 'Utbetalning ' + getDayName(payDay);
-    const subText  = diff === 0 ? 'Veckopeng betalas ut idag' : diff === 1 ? 'Imorgon' : 'Om ' + diff + ' dagar';
+    const mainText = CHILD_FRIENDLY
+      ? (diff === 0 ? 'Veckopeng idag! 🎉' : 'Veckopeng på ' + getDayName(payDay))
+      : (diff === 0 ? 'Utbetalning idag!' : 'Utbetalning ' + getDayName(payDay));
+    const subText = CHILD_FRIENDLY
+      ? (diff === 0 ? 'Pengarna betalas ut idag' : diff === 1 ? '1 dag kvar' : diff + ' dagar kvar')
+      : (diff === 0 ? 'Veckopeng betalas ut idag' : diff === 1 ? 'Imorgon' : 'Om ' + diff + ' dagar');
     document.getElementById('payout-main').textContent = mainText;
     document.getElementById('payout-sub').textContent  = subText;
 
@@ -1405,7 +1411,7 @@
       card.style.cssText = '--kc:' + kc.c + ';--kcs:' + kc.s + ';--kcg:' + kc.g;
       card.setAttribute('role', 'button');
       card.setAttribute('tabindex', '0');
-      card.setAttribute('aria-label', escHtml(kid.name) + ', ' + bal + ' kronor. Tryck för att ändra saldo.');
+      card.setAttribute('aria-label', escHtml(kid.name) + ', ' + bal + ' kronor. Tryck för att ' + (CHILD_FRIENDLY ? 'ändra pengar.' : 'ändra saldo.'));
       card.onclick = () => window.openSheet(i);
       card.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); window.openSheet(i); } };
 
@@ -1436,9 +1442,9 @@
         '</div>' +
         goalHtml +
         '<button class="card-cta" onclick="openSheet(' + i + ');event.stopPropagation()" ' +
-          'aria-label="Ändra saldo för ' + escHtml(kid.name) + '">' +
+          'aria-label="' + (CHILD_FRIENDLY ? 'Ändra pengar' : 'Ändra saldo') + ' för ' + escHtml(kid.name) + '">' +
           '<svg class="ic ic-sm" viewBox="0 0 24 24"><path d="M16 4l4 4-11 11H5v-4z"/><path d="M14 6l4 4"/></svg>' +
-          'Ändra saldo' +
+          (CHILD_FRIENDLY ? 'Ändra' : 'Ändra saldo') +
         '</button>';
       grid.appendChild(card);
     });
