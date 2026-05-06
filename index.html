@@ -1058,11 +1058,12 @@
   function hide(id)            { document.getElementById(id).style.display = 'none'; }
   function show(id, d='block') { document.getElementById(id).style.display = d; }
   function escHtml(s)          { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-  function getDayName(d)       { return ['Söndag','Måndag','Tisdag','Onsdag','Torsdag','Fredag','Lördag'][d]; }
+  function getDayName(d)       { return ['söndag','måndag','tisdag','onsdag','torsdag','fredag','lördag'][d]; }
   function getTodayLabel() {
     const months = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
     const d = new Date();
-    return getDayName(d.getDay()) + ', ' + d.getDate() + ' ' + months[d.getMonth()];
+    const day = getDayName(d.getDay());
+    return day.charAt(0).toUpperCase() + day.slice(1) + ', ' + d.getDate() + ' ' + months[d.getMonth()];
   }
 
   function lastOccurrence(date, wd) {
