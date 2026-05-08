@@ -1396,12 +1396,14 @@
     const next     = new Date(lastDue);
     if (next.getTime() < todayMid.getTime()) next.setDate(next.getDate() + 7);
     const diff = Math.round((next - todayMid) / (24*60*60*1000));
+    const lastPayoutDate = data.lastPayout ? new Date(data.lastPayout) : null;
+    const paidToday = lastPayoutDate && lastPayoutDate.toDateString() === todayMid.toDateString();
     const mainText = CHILD_FRIENDLY
       ? (diff === 0 ? 'Veckopeng idag! 🎉' : 'Veckopeng på ' + getDayName(payDay))
       : (diff === 0 ? 'Utbetalning idag!' : 'Utbetalning ' + getDayName(payDay));
     const subText = CHILD_FRIENDLY
-      ? (diff === 0 ? 'Pengarna betalas ut idag' : diff === 1 ? '1 dag kvar' : diff + ' dagar kvar')
-      : (diff === 0 ? 'Veckopeng betalas ut idag' : diff === 1 ? 'Imorgon' : 'Om ' + diff + ' dagar');
+      ? (diff === 0 ? (paidToday ? 'Pengarna har betalats ut idag' : 'Pengarna betalas ut idag') : diff === 1 ? '1 dag kvar' : diff + ' dagar kvar')
+      : (diff === 0 ? (paidToday ? 'Veckopeng har betalats ut idag' : 'Veckopeng betalas ut idag') : diff === 1 ? 'Imorgon' : 'Om ' + diff + ' dagar');
     document.getElementById('payout-main').textContent = mainText;
     document.getElementById('payout-sub').textContent  = subText;
 

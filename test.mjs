@@ -25,13 +25,13 @@ function lastOccurrence(date, wd) {
 
 const CHILD_FRIENDLY = true;
 
-function payoutTexts(diff, payDay) {
+function payoutTexts(diff, payDay, paidToday = false) {
   const mainText = CHILD_FRIENDLY
     ? (diff === 0 ? 'Veckopeng idag! 🎉' : 'Veckopeng på ' + getDayName(payDay))
     : (diff === 0 ? 'Utbetalning idag!' : 'Utbetalning ' + getDayName(payDay));
   const subText = CHILD_FRIENDLY
-    ? (diff === 0 ? 'Pengarna betalas ut idag' : diff === 1 ? '1 dag kvar' : diff + ' dagar kvar')
-    : (diff === 0 ? 'Veckopeng betalas ut idag' : diff === 1 ? 'Imorgon' : 'Om ' + diff + ' dagar');
+    ? (diff === 0 ? (paidToday ? 'Pengarna har betalats ut idag' : 'Pengarna betalas ut idag') : diff === 1 ? '1 dag kvar' : diff + ' dagar kvar')
+    : (diff === 0 ? (paidToday ? 'Veckopeng har betalats ut idag' : 'Veckopeng betalas ut idag') : diff === 1 ? 'Imorgon' : 'Om ' + diff + ' dagar');
   return { mainText, subText };
 }
 
@@ -96,10 +96,14 @@ test('result always <= input date', () => {
 });
 
 console.log('\npayoutTexts (CHILD_FRIENDLY=true)');
-test('idag', () => {
-  const { mainText, subText } = payoutTexts(0, 5);
+test('idag, ej utbetalt → betalas ut', () => {
+  const { mainText, subText } = payoutTexts(0, 5, false);
   assert.equal(mainText, 'Veckopeng idag! 🎉');
   assert.equal(subText,  'Pengarna betalas ut idag');
+});
+test('idag, redan utbetalt → har betalats ut', () => {
+  const { subText } = payoutTexts(0, 5, true);
+  assert.equal(subText, 'Pengarna har betalats ut idag');
 });
 test('imorgon → 1 dag kvar', () => {
   const { subText } = payoutTexts(1, 5);
