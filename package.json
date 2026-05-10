@@ -1,6 +1,5 @@
 {
   "name": "min-spargris",
-  "type": "module",
   "scripts": {
     "test": "node test.mjs"
   }
