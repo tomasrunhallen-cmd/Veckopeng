@@ -1,0 +1,31 @@
+name: Veckobackup – Firestore
+
+on:
+  schedule:
+    - cron: '0 5 * * 1'   # Varje måndag 05:00 UTC
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Installera firebase-admin
+        run: npm install firebase-admin
+
+      - name: Kör backup
+        run: node scripts/backup.js
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+      - name: Spara backup som artefakt
+        uses: actions/upload-artifact@v4
+        with:
+          name: firestore-backup-${{ github.run_id }}
+          path: backup-*.json
+          retention-days: 90

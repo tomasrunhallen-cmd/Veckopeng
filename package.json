@@ -1,0 +1,6 @@
+{
+  "name": "min-spargris",
+  "scripts": {
+    "test": "node test.mjs"
+  }
+}

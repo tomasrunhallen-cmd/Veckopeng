@@ -52,7 +52,13 @@ async function payoutFamily(docId, ref) {
 async function run() {
   const snapshot = await db.collection('families').get();
   if (snapshot.empty) { console.log('Inga familjdokument hittades.'); return; }
-  await Promise.all(snapshot.docs.map(d => payoutFamily(d.id, d.ref)));
+
+  const results = await Promise.allSettled(snapshot.docs.map(d => payoutFamily(d.id, d.ref)));
+  const failures = results.filter(r => r.status === 'rejected');
+  if (failures.length) {
+    failures.forEach(f => console.error('Fel vid utbetalning:', f.reason));
+    process.exit(1);
+  }
 }
 
-run().catch(err => { console.error(err); process.exit(1); });
+run().catch(err => { console.error('Kritiskt fel:', err); process.exit(1); });
