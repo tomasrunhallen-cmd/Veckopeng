@@ -883,27 +883,15 @@
   }
 
   // ── FAMILY RESOLUTION ──
-  const MULTI_FAMILY_CUTOFF = new Date('2026-05-05T00:00:00Z');
-
   async function getFamilyOrOnboard(user) {
     const uid = user.uid;
-    const { db, doc, getDoc, setDoc } = window._fb;
+    const { db, doc, getDoc } = window._fb;
     const userSnap = await getDoc(doc(db, 'users', uid));
     if (userSnap.exists()) {
       const { familyId } = userSnap.data();
       FAMILY_ID  = familyId;
       FAMILY_DOC = 'families/' + familyId;
       return 'found';
-    }
-    const createdAt = new Date(user.metadata.creationTime);
-    if (createdAt < MULTI_FAMILY_CUTOFF) {
-      const mainSnap = await getDoc(doc(db, 'families/main'));
-      if (mainSnap.exists()) {
-        await setDoc(doc(db, 'users', uid), { familyId: 'main' });
-        FAMILY_ID  = 'main';
-        FAMILY_DOC = 'families/main';
-        return 'found';
-      }
     }
     return 'onboard';
   }

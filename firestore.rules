@@ -1,0 +1,25 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Hjälpfunktion: hämtar vilken familj den inloggade användaren tillhör
+    function myFamilyId() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.familyId;
+    }
+
+    // Varje användare kan bara läsa/skriva sitt eget användardokument
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Familjedokument: bara medlemmar i just den familjen får åtkomst
+    match /families/{familyId} {
+      allow read, write: if request.auth != null && myFamilyId() == familyId;
+
+      // Transaktioner ärver samma regel
+      match /transactions/{txId} {
+        allow read, write: if request.auth != null && myFamilyId() == familyId;
+      }
+    }
+  }
+}
