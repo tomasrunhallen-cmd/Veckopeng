@@ -885,12 +885,22 @@
   // ── FAMILY RESOLUTION ──
   async function getFamilyOrOnboard(user) {
     const uid = user.uid;
-    const { db, doc, getDoc } = window._fb;
+    const { db, doc, getDoc, setDoc } = window._fb;
     const userSnap = await getDoc(doc(db, 'users', uid));
     if (userSnap.exists()) {
-      const { familyId } = userSnap.data();
-      FAMILY_ID  = familyId;
-      FAMILY_DOC = 'families/' + familyId;
+      const data = userSnap.data();
+      if (data.familyId) {
+        FAMILY_ID  = data.familyId;
+        FAMILY_DOC = 'families/' + data.familyId;
+        return 'found';
+      }
+    }
+    // Legacy: original user without familyId → check families/main and auto-migrate
+    const mainSnap = await getDoc(doc(db, 'families', 'main'));
+    if (mainSnap.exists()) {
+      FAMILY_ID  = 'main';
+      FAMILY_DOC = 'families/main';
+      await setDoc(doc(db, 'users', uid), { familyId: 'main' }, { merge: true });
       return 'found';
     }
     return 'onboard';
