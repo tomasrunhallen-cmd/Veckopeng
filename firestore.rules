@@ -2,23 +2,22 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Hjälpfunktion: hämtar vilken familj den inloggade användaren tillhör
     function myFamilyId() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.familyId;
+      let userDoc = get(/databases/$(database)/documents/users/$(request.auth.uid));
+      return userDoc.data != null ? userDoc.data.get('familyId', null) : null;
     }
 
-    // Varje användare kan bara läsa/skriva sitt eget användardokument
     match /users/{uid} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
     }
 
-    // Familjedokument: bara medlemmar i just den familjen får åtkomst
+    // families/main tillåts för alla inloggade under migreringsperioden
     match /families/{familyId} {
-      allow read, write: if request.auth != null && myFamilyId() == familyId;
-
-      // Transaktioner ärver samma regel
+      allow read, write: if request.auth != null &&
+        (myFamilyId() == familyId || familyId == 'main');
       match /transactions/{txId} {
-        allow read, write: if request.auth != null && myFamilyId() == familyId;
+        allow read, write: if request.auth != null &&
+          (myFamilyId() == familyId || familyId == 'main');
       }
     }
   }
