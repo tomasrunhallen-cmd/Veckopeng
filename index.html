@@ -502,7 +502,16 @@
     }
     .amount-input:focus { outline: none; border-color: var(--primary); }
     .amount-unit { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); font-size: 15px; font-weight: 600; color: var(--ink-2); }
-    .sheet-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .note-input {
+      width: 100%; padding: 11px 14px; margin-top: 10px; box-sizing: border-box;
+      background: var(--card); border: 1px solid var(--line-s);
+      border-radius: 12px; color: var(--ink); font-size: 15px;
+      font-family: inherit; outline: none;
+      transition: border-color 0.15s;
+    }
+    .note-input:focus { border-color: var(--primary); }
+    .note-input::placeholder { color: var(--ink-2); }
+    .sheet-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
     .sheet-btn {
       padding: 16px; border: none; border-radius: 14px;
       font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit;
@@ -770,6 +779,8 @@
            min="0" inputmode="decimal" aria-label="Belopp i kronor" />
     <span class="amount-unit" aria-hidden="true">kr</span>
   </div>
+  <input class="note-input" id="note-input" type="text" placeholder="Vad är det för? (valfritt)"
+         maxlength="50" autocomplete="off" aria-label="Beskrivning" />
   <div class="sheet-actions">
     <button class="sheet-btn add" onclick="doAdjust(1)">＋ Lägg till</button>
     <button class="sheet-btn sub" onclick="doAdjust(-1)">− Ta bort</button>
@@ -1112,7 +1123,7 @@
       const iconClass = tx.undone ? 'undone' : pos ? 'in' : 'out';
       const amtClass  = tx.undone ? 'undone' : pos ? 'in' : 'out';
       const name     = escHtml(tx.kidName || ('Barn ' + (tx.kidIndex + 1)));
-      const typeStr  = tx.type === 'payout' ? 'Veckopeng' : tx.undone ? 'Ångrad' : 'Manuell';
+      const typeStr  = tx.type === 'payout' ? 'Veckopeng' : tx.undone ? 'Ångrad' : (tx.note ? escHtml(tx.note) : 'Manuell');
       const date     = new Date(tx.timestamp).toLocaleDateString('sv-SE', { month: 'short', day: 'numeric' });
       const arrowSvg = tx.undone
         ? '<svg class="ic ic-sm" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>'
@@ -1167,6 +1178,7 @@
     document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
     const inp = document.getElementById('amount-input');
     inp.value = '';
+    document.getElementById('note-input').value = '';
     document.getElementById('overlay').classList.add('show');
     const sheet = document.getElementById('sheet');
     sheet.classList.add('open');
@@ -1188,10 +1200,11 @@
 
   // ── ADJUST ──
   window.doAdjust = async function(sign) {
-    const inp = document.getElementById('amount-input');
-    const val = parseFloat(inp.value) || 0;
+    const inp  = document.getElementById('amount-input');
+    const val  = parseFloat(inp.value) || 0;
     if (val <= 0) { inp.focus(); return; }
     const delta = sign * val;
+    const note  = document.getElementById('note-input').value.trim();
     closeSheet();
     const kids = localData.kids.map((k, j) =>
       j === activeKid ? { ...k, balance: (k.balance || 0) + delta } : k
@@ -1203,7 +1216,8 @@
         const { db, collection, addDoc } = window._fb;
         lastTxRef = await addDoc(collection(db, FAMILY_DOC + '/transactions'), {
           kidIndex: activeKid, kidName: localData.kids[activeKid].name,
-          delta, type: 'manual', timestamp: new Date().toISOString(), undone: false
+          delta, type: 'manual', timestamp: new Date().toISOString(), undone: false,
+          ...(note ? { note } : {})
         });
       } catch(e) { lastTxRef = null; }
     }
