@@ -443,6 +443,7 @@
       font-size: 13px; font-weight: 600; cursor: pointer; transition: border-color 0.2s; white-space: nowrap;
     }
     .bg-pick-btn:hover { border-color: var(--primary); }
+    .bg-hammarby-btn { background: linear-gradient(135deg,#002D14,#005C24) !important; color: #4ADE80 !important; border-color: #1B5E20 !important; }
     .bg-remove-btn {
       font-size: 12px; padding: 5px 10px; border-radius: 8px;
       background: rgba(255,107,107,0.12); color: var(--red);
@@ -502,7 +503,16 @@
     }
     .amount-input:focus { outline: none; border-color: var(--primary); }
     .amount-unit { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); font-size: 15px; font-weight: 600; color: var(--ink-2); }
-    .sheet-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .note-input {
+      width: 100%; padding: 11px 14px; margin-top: 10px; box-sizing: border-box;
+      background: var(--card); border: 1px solid var(--line-s);
+      border-radius: 12px; color: var(--ink); font-size: 15px;
+      font-family: inherit; outline: none;
+      transition: border-color 0.15s;
+    }
+    .note-input:focus { border-color: var(--primary); }
+    .note-input::placeholder { color: var(--ink-2); }
+    .sheet-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
     .sheet-btn {
       padding: 16px; border: none; border-radius: 14px;
       font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit;
@@ -770,6 +780,8 @@
            min="0" inputmode="decimal" aria-label="Belopp i kronor" />
     <span class="amount-unit" aria-hidden="true">kr</span>
   </div>
+  <input class="note-input" id="note-input" type="text" placeholder="Vad är det för? (valfritt)"
+         maxlength="50" autocomplete="off" aria-label="Beskrivning" />
   <div class="sheet-actions">
     <button class="sheet-btn add" onclick="doAdjust(1)">＋ Lägg till</button>
     <button class="sheet-btn sub" onclick="doAdjust(-1)">− Ta bort</button>
@@ -1012,14 +1024,35 @@
     const ctrl = document.getElementById('s-bg-controls');
     if (!ctrl) return;
     const saved = localStorage.getItem('vp-bg-img');
-    if (saved) {
-      ctrl.innerHTML =
-        '<img src="' + saved + '" class="bg-preview" alt="Bakgrund">' +
-        '<button class="bg-remove-btn" onclick="removeBgImage()">Ta bort</button>';
-    } else {
-      ctrl.innerHTML = '<button class="bg-pick-btn" onclick="document.getElementById(\'bg-file-input\').click()">Välj bild</button>';
-    }
+    const previewHtml = saved
+      ? '<img src="' + saved + '" class="bg-preview" alt="Bakgrund"><button class="bg-remove-btn" onclick="removeBgImage()">Ta bort</button>'
+      : '';
+    ctrl.innerHTML =
+      previewHtml +
+      '<button class="bg-pick-btn" onclick="document.getElementById(\'bg-file-input\').click()">Välj bild</button>' +
+      '<button class="bg-pick-btn bg-hammarby-btn" onclick="applyHammarbyBg()">⚽ Hammarby</button>';
   }
+  window.applyHammarbyBg = function() {
+    const W = 800, H = 1422;
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+    const grad = ctx.createLinearGradient(0, 0, 0, H);
+    grad.addColorStop(0,   '#001A0C');
+    grad.addColorStop(0.5, '#003318');
+    grad.addColorStop(1,   '#000D06');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+    const glow = ctx.createRadialGradient(W / 2, H * 0.38, 0, W / 2, H * 0.38, W * 0.65);
+    glow.addColorStop(0, 'rgba(0,140,60,0.35)');
+    glow.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, W, H);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+    try { localStorage.setItem('vp-bg-img', dataUrl); } catch(e) { return; }
+    applyBgImage(dataUrl);
+    renderBgControls();
+  };
   window.onBgFileSelected = function(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -1112,7 +1145,7 @@
       const iconClass = tx.undone ? 'undone' : pos ? 'in' : 'out';
       const amtClass  = tx.undone ? 'undone' : pos ? 'in' : 'out';
       const name     = escHtml(tx.kidName || ('Barn ' + (tx.kidIndex + 1)));
-      const typeStr  = tx.type === 'payout' ? 'Veckopeng' : tx.undone ? 'Ångrad' : 'Manuell';
+      const typeStr  = tx.type === 'payout' ? 'Veckopeng' : tx.undone ? 'Ångrad' : (tx.note ? escHtml(tx.note) : 'Manuell');
       const date     = new Date(tx.timestamp).toLocaleDateString('sv-SE', { month: 'short', day: 'numeric' });
       const arrowSvg = tx.undone
         ? '<svg class="ic ic-sm" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>'
@@ -1167,6 +1200,7 @@
     document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
     const inp = document.getElementById('amount-input');
     inp.value = '';
+    document.getElementById('note-input').value = '';
     document.getElementById('overlay').classList.add('show');
     const sheet = document.getElementById('sheet');
     sheet.classList.add('open');
@@ -1188,10 +1222,11 @@
 
   // ── ADJUST ──
   window.doAdjust = async function(sign) {
-    const inp = document.getElementById('amount-input');
-    const val = parseFloat(inp.value) || 0;
+    const inp  = document.getElementById('amount-input');
+    const val  = parseFloat(inp.value) || 0;
     if (val <= 0) { inp.focus(); return; }
     const delta = sign * val;
+    const note  = document.getElementById('note-input').value.trim();
     closeSheet();
     const kids = localData.kids.map((k, j) =>
       j === activeKid ? { ...k, balance: (k.balance || 0) + delta } : k
@@ -1203,7 +1238,8 @@
         const { db, collection, addDoc } = window._fb;
         lastTxRef = await addDoc(collection(db, FAMILY_DOC + '/transactions'), {
           kidIndex: activeKid, kidName: localData.kids[activeKid].name,
-          delta, type: 'manual', timestamp: new Date().toISOString(), undone: false
+          delta, type: 'manual', timestamp: new Date().toISOString(), undone: false,
+          ...(note ? { note } : {})
         });
       } catch(e) { lastTxRef = null; }
     }
