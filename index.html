@@ -435,7 +435,7 @@
       transition: all 0.2s ease; letter-spacing: -0.01em;
     }
     .add-kid-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-s); }
-    .bg-controls { display: flex; align-items: center; gap: 8px; }
+    .bg-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; width: 100%; }
     .bg-preview { width: 40px; height: 40px; border-radius: 9px; object-fit: cover; border: 1px solid var(--line); }
     .bg-pick-btn {
       background: var(--el2); border: 1.5px solid var(--line);
@@ -748,11 +748,8 @@
             <option value="0">Söndag</option>
           </select>
         </div>
-        <div class="setting-row" id="s-bg-row">
-          <div>
-            <div class="setting-label">Bakgrundsbild</div>
-            <div class="setting-sub">Välj bild från enheten</div>
-          </div>
+        <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:10px">
+          <div class="setting-label">Bakgrundsbild</div>
           <div class="bg-controls" id="s-bg-controls"></div>
         </div>
       </div>
