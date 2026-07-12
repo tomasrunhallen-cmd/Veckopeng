@@ -750,7 +750,11 @@
         </div>
         <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:10px">
           <div class="setting-label">Bakgrundsbild</div>
-          <div class="bg-controls" id="s-bg-controls"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="bg-pick-btn" onclick="document.getElementById('bg-file-input').click()">Välj bild</button>
+            <button class="bg-pick-btn bg-hammarby-btn" onclick="applyHammarbyBg()">⚽ Hammarby</button>
+          </div>
+          <div id="s-bg-controls"></div>
         </div>
       </div>
       <button class="save-btn" onclick="saveSettings()">Spara inställningar</button>
@@ -1021,13 +1025,9 @@
     const ctrl = document.getElementById('s-bg-controls');
     if (!ctrl) return;
     const saved = localStorage.getItem('vp-bg-img');
-    const previewHtml = saved
-      ? '<img src="' + saved + '" class="bg-preview" alt="Bakgrund"><button class="bg-remove-btn" onclick="removeBgImage()">Ta bort</button>'
+    ctrl.innerHTML = saved
+      ? '<div class="bg-controls"><img src="' + saved + '" class="bg-preview" alt="Bakgrund"><button class="bg-remove-btn" onclick="removeBgImage()">Ta bort</button></div>'
       : '';
-    ctrl.innerHTML =
-      previewHtml +
-      '<button class="bg-pick-btn" onclick="document.getElementById(\'bg-file-input\').click()">Välj bild</button>' +
-      '<button class="bg-pick-btn bg-hammarby-btn" onclick="applyHammarbyBg()">⚽ Hammarby</button>';
   }
   window.applyHammarbyBg = function() {
     const W = 800, H = 1422;
