@@ -443,7 +443,7 @@
       font-size: 13px; font-weight: 600; cursor: pointer; transition: border-color 0.2s; white-space: nowrap;
     }
     .bg-pick-btn:hover { border-color: var(--primary); }
-    .bg-hammarby-btn { background: linear-gradient(135deg,#0A3D1F,#1A7A40) !important; color: #4ADE80 !important; border-color: #1AB35A !important; }
+    .bg-hammarby-btn { background: #05341F !important; color: #35C46F !important; border-color: #007A43 !important; }
     .bg-remove-btn {
       font-size: 12px; padding: 5px 10px; border-radius: 8px;
       background: rgba(255,107,107,0.12); color: var(--red);
@@ -1035,40 +1035,28 @@
     canvas.width = W; canvas.height = H;
     const ctx = canvas.getContext('2d');
 
-    // Svart bas
-    ctx.fillStyle = '#080E09';
-    ctx.fillRect(0, 0, W, H);
-
-    // Subtila gräsränder (vertikala, som en fotbollsplan sedd uppifrån)
-    for (let i = 0; i < 10; i++) {
-      const x = i * (W / 10);
-      const stripe = ctx.createLinearGradient(x, 0, x + W / 10, 0);
-      const dark = 'rgba(10,40,20,0.55)', light = 'rgba(14,52,26,0.55)';
-      stripe.addColorStop(0, dark); stripe.addColorStop(0.5, light); stripe.addColorStop(1, dark);
-      ctx.fillStyle = stripe;
-      ctx.fillRect(x, 0, W / 10, H);
+    // Tröjränder: #05341F och #007A43 om vartannat, 72 px breda (som hero på hammarbyfotboll.se)
+    const SW = 72;
+    for (let x = 0; x < W; x += SW * 2) {
+      ctx.fillStyle = '#05341F';
+      ctx.fillRect(x,      0, SW, H);
+      ctx.fillStyle = '#007A43';
+      ctx.fillRect(x + SW, 0, SW, H);
     }
 
-    // Stadion-glow underifrån — Hammarby-grön #1AB35A
-    const glow = ctx.createRadialGradient(W / 2, H * 0.85, 0, W / 2, H * 0.85, W * 1.1);
-    glow.addColorStop(0,   'rgba(26,179,90,0.55)');
-    glow.addColorStop(0.4, 'rgba(10,100,44,0.25)');
+    // Mörkt overlay – exakt som sajt-hero: rgba(5,52,31,.88→.94)
+    const overlay = ctx.createLinearGradient(0, 0, 0, H);
+    overlay.addColorStop(0, 'rgba(5,52,31,0.88)');
+    overlay.addColorStop(1, 'rgba(5,52,31,0.96)');
+    ctx.fillStyle = overlay;
+    ctx.fillRect(0, 0, W, H);
+
+    // Signal-grön glow nerifrån (#35C46F – live-accentfärgen)
+    const glow = ctx.createRadialGradient(W / 2, H, 0, W / 2, H * 0.75, W);
+    glow.addColorStop(0,   'rgba(53,196,111,0.32)');
+    glow.addColorStop(0.45,'rgba(0,122,67,0.12)');
     glow.addColorStop(1,   'rgba(0,0,0,0)');
     ctx.fillStyle = glow;
-    ctx.fillRect(0, 0, W, H);
-
-    // Svagt glöd uppifrån för djup
-    const topGlow = ctx.createRadialGradient(W / 2, 0, 0, W / 2, 0, W * 0.8);
-    topGlow.addColorStop(0,   'rgba(26,179,90,0.18)');
-    topGlow.addColorStop(1,   'rgba(0,0,0,0)');
-    ctx.fillStyle = topGlow;
-    ctx.fillRect(0, 0, W, H);
-
-    // Mörkare vinjett längs kanterna
-    const vignette = ctx.createRadialGradient(W/2, H/2, W*0.3, W/2, H/2, W*0.9);
-    vignette.addColorStop(0, 'rgba(0,0,0,0)');
-    vignette.addColorStop(1, 'rgba(0,0,0,0.6)');
-    ctx.fillStyle = vignette;
     ctx.fillRect(0, 0, W, H);
 
     const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
