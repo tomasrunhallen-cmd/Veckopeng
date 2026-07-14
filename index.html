@@ -219,6 +219,8 @@
     }
     .header-app-icon { width: 48px; height: 48px; object-fit: cover; display: block; }
     .header-app-emoji { font-size: 28px; line-height: 1; display: none; }
+    .header-hif-logo { display: none; width: 48px; height: 48px; }
+    .header-hif-logo svg { width: 100%; height: 100%; }
     .header-text { display: flex; flex-direction: column; gap: 1px; }
     .header-date { font-size: 13px; font-weight: 500; color: var(--ink-2); letter-spacing: -0.01em; }
     .header-right { display: flex; align-items: center; gap: 8px; }
@@ -690,6 +692,15 @@
         <img src="icon-192.png" alt="" class="header-app-icon"
              onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
         <span class="header-app-emoji">🐷</span>
+        <span class="header-hif-logo"><svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+          <defs><clipPath id="hif-clip"><path d="M24 2L44 10L44 30Q44 43 24 46Q4 43 4 30L4 10Z"/></clipPath></defs>
+          <rect x="0"  y="0" width="12" height="48" fill="#05341F" clip-path="url(#hif-clip)"/>
+          <rect x="12" y="0" width="12" height="48" fill="#007A43" clip-path="url(#hif-clip)"/>
+          <rect x="24" y="0" width="12" height="48" fill="#05341F" clip-path="url(#hif-clip)"/>
+          <rect x="36" y="0" width="12" height="48" fill="#007A43" clip-path="url(#hif-clip)"/>
+          <path d="M24 2L44 10L44 30Q44 43 24 46Q4 43 4 30L4 10Z" fill="none" stroke="#35C46F" stroke-width="1.5"/>
+          <text x="24" y="31" text-anchor="middle" font-size="12" font-weight="900" fill="#35C46F" font-family="Arial,sans-serif" letter-spacing="0.5">HIF</text>
+        </svg></span>
       </div>
       <span class="header-date" id="header-date"></span>
     </div>
@@ -1010,9 +1021,26 @@
   };
 
   // ── BACKGROUND IMAGE ──
+  function updateHeaderIcon() {
+    const isHammarby = localStorage.getItem('vp-bg-type') === 'hammarby';
+    const img   = document.querySelector('.header-app-icon');
+    const emoji = document.querySelector('.header-app-emoji');
+    const hif   = document.querySelector('.header-hif-logo');
+    if (!hif) return;
+    if (isHammarby) {
+      if (img)   img.style.display   = 'none';
+      if (emoji) emoji.style.display = 'none';
+      hif.style.display = 'block';
+    } else {
+      if (img)   img.style.display   = '';
+      if (emoji) emoji.style.display = '';
+      hif.style.display = 'none';
+    }
+  }
   function initBgImage() {
     const saved = localStorage.getItem('vp-bg-img');
     if (saved) applyBgImage(saved);
+    updateHeaderIcon();
     renderBgControls();
   }
   function applyBgImage(dataUrl) {
@@ -1061,7 +1089,9 @@
 
     const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
     try { localStorage.setItem('vp-bg-img', dataUrl); } catch(e) { return; }
+    localStorage.setItem('vp-bg-type', 'hammarby');
     applyBgImage(dataUrl);
+    updateHeaderIcon();
     renderBgControls();
   };
   window.onBgFileSelected = function(e) {
@@ -1089,10 +1119,12 @@
   };
   window.removeBgImage = function() {
     localStorage.removeItem('vp-bg-img');
+    localStorage.removeItem('vp-bg-type');
     const layer = document.getElementById('bg-layer');
     layer.style.backgroundImage = '';
     layer.classList.remove('active');
     document.body.style.backgroundColor = '';
+    updateHeaderIcon();
     renderBgControls();
   };
 
