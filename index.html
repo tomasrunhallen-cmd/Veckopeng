@@ -1044,17 +1044,17 @@
       ctx.fillRect(x + SW, 0, SW, H);
     }
 
-    // Mörkt overlay – exakt som sajt-hero: rgba(5,52,31,.88→.94)
+    // Mörkt overlay – tillräckligt ljust för att ränder ska synas
     const overlay = ctx.createLinearGradient(0, 0, 0, H);
-    overlay.addColorStop(0, 'rgba(5,52,31,0.88)');
-    overlay.addColorStop(1, 'rgba(5,52,31,0.96)');
+    overlay.addColorStop(0, 'rgba(5,52,31,0.60)');
+    overlay.addColorStop(1, 'rgba(5,52,31,0.72)');
     ctx.fillStyle = overlay;
     ctx.fillRect(0, 0, W, H);
 
     // Signal-grön glow nerifrån (#35C46F – live-accentfärgen)
     const glow = ctx.createRadialGradient(W / 2, H, 0, W / 2, H * 0.75, W);
-    glow.addColorStop(0,   'rgba(53,196,111,0.32)');
-    glow.addColorStop(0.45,'rgba(0,122,67,0.12)');
+    glow.addColorStop(0,   'rgba(53,196,111,0.45)');
+    glow.addColorStop(0.45,'rgba(0,122,67,0.18)');
     glow.addColorStop(1,   'rgba(0,0,0,0)');
     ctx.fillStyle = glow;
     ctx.fillRect(0, 0, W, H);
